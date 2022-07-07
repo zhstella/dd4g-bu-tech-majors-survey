@@ -17,3 +17,5 @@ Imports:
     lifecycle,
     rlang,
     withr
+URL: https://github.com/dpmcsuss/deiSurveyShiny
+BugReports: https://github.com/dpmcsuss/deiSurveyShiny/issues
