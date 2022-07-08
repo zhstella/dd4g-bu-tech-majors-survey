@@ -1,4 +1,9 @@
 compare_groups_ui <- function(id) {
+  race_choice_list <- as.list(race_df$name)
+  names(race_choice_list) <- race_df$race_str
+  race_str_list <- as.list(race_df$race_str)
+  names(race_str_list) <- race_df$name
+
   tabPanel(
     "Compare groups",
     sidebarLayout(
@@ -23,7 +28,7 @@ compare_groups_ui <- function(id) {
   )
 }
 
-compare_group_server <- function(id, course_df) {
+compare_group_server <- function(id) {
   moduleServer(id, function(input, output, session) {
     course_compare <- reactive({
       g1 <- input$group1

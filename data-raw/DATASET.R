@@ -39,20 +39,19 @@ usethis::use_data(ddf, overwrite = TRUE)
 
 
 
-race_df <- ddf %>%
-  count(race) %>%
-  filter(!str_detect(race, ",")) %>%
-  transmute(
-    name = tolower(race) %>%
-      str_extract("[\\w\\s]+") %>%
-      str_remove_all("\\s*$") %>%
-      str_replace_all("\\s", "_") %>%
-      str_c("race_", .),
-    race_str = race
-  )
-race_choice_list <- as.list(race_df$name)
-names(race_choice_list) <- race_df$race_str
-race_str_list <- as.list(race_df$race_str)
-names(race_str_list) <- race_df$name
 
-usethis::use_data(race_df, race_choice_list, race_str_list, internal = TRUE, overwrite = TRUE)
+
+response_level <-
+  c(
+    "Extremely dissatisfied",
+    "Somewhat dissatisfied",
+    "Neither satisfied nor dissatisfied",
+    "Somewhat satisfied",
+    "Extremely satisfied"
+  )
+
+usethis::use_data(
+  response_level,
+  internal = TRUE,
+  overwrite = TRUE
+)
