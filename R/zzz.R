@@ -2,8 +2,8 @@
 # On loading the package, dynamically create a bunch of variables for the
 # package environment. Definitely might want to change how we do this.
 .onLoad <- function(libname, pkgname) {
-
-
+  ddf <- deiSurveyShiny::ddf
+  original_question_df <- deiSurveyShiny::original_question_df
   # create gender variables
   gender_df <- ddf %>% count(gender)
   assign("gender_df", gender_df, envir = topenv())

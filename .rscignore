@@ -1,2 +1,6 @@
-.*
-data-raw/*
+.Rhistory
+data-raw
+man
+README.Rmd
+README.md
+.github
