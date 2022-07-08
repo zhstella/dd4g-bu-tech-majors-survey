@@ -1,7 +1,7 @@
 
 
 
-compare_groups <- function(course_df, race_df, r1, r2){
+compare_groups <- function(course_df, race_df, r1, r2) {
   # library(ordinal)
   # browser()
   rdf <- compare_group_df(course_df, race_df, r1, r2)
@@ -33,8 +33,7 @@ compare_groups <- function(course_df, race_df, r1, r2){
 }
 
 
-compare_group_df <- function(course_df, race_df, r1, r2){
-
+compare_group_df <- function(course_df, race_df, r1, r2) {
   race_str_list <- as.list(race_df$race_str)
   names(race_str_list) <- race_df$name
   bind_rows(
@@ -51,5 +50,5 @@ compare_group_df <- function(course_df, race_df, r1, r2){
         str = str_c(race_str_list[r2], collapse = "\n ")
       )
   ) %>%
-  mutate(group = factor(group, levels = c("1", "2")))
+    mutate(group = factor(group, levels = c("1", "2")))
 }

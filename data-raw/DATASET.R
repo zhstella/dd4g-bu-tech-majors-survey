@@ -31,7 +31,7 @@ ddf <- ddf %>%
     prepared = Q10
   ) %>%
   rename_with(
-    ~str_c("adj_", str_sub(., 5)),
+    ~ str_c("adj_", str_sub(., 5)),
     .cols = starts_with("Q24")
   )
 usethis::use_data(ddf, overwrite = TRUE)
