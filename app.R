@@ -1,3 +1,3 @@
 pkgload::load_all(".")
-app()
+shiny::runApp(app())
 

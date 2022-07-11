@@ -10,7 +10,7 @@ app <- function(...) {
     )
   )
 
-    server <- function(input, output) {
+  server <- function(input, output) {
     course_satisfaction_server("course_satisfaction")
     course_corr_server("course_corr")
     compare_group_server("compare_groups")

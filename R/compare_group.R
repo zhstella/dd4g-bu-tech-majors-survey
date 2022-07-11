@@ -14,7 +14,7 @@ compare_groups <- function(course_df, race_df, r1, r2) {
       filter(term == "group2") %>%
       pull(statistic),
     error = function(e) NA,
-    warning = function(e) NA
+    warning = function(e) NaN
   )
 
   rdf %>%
