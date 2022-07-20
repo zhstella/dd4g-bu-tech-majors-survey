@@ -1,7 +1,7 @@
 # Cleaning functions
 
 add_race_vars <- function(ddf, race_df) {
-  race_df <- ddf %>%
+  ddf %>%
     select(ResponseId, race) %>%
     full_join(race_df, by = character()) %>%
     mutate(
