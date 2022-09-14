@@ -1,6 +1,19 @@
 # Cleaning functions
 
 add_race_vars <- function(ddf, race_df) {
+  if(FALSE){
+    race_df <- ddf %>%
+      count(race) %>%
+      filter(!str_detect(race, ",")) %>% # assumes each race was picked alone at least once
+      transmute(
+        name = tolower(race) %>%
+          str_extract("[\\w\\s]+") %>%
+          str_remove_all("\\s*$") %>%
+          str_replace_all("\\s", "_") %>%
+          str_c("race_", .),
+        race_str = race
+      )
+  }
   ddf %>%
     select(ResponseId, race) %>%
     full_join(race_df, by = character()) %>%

@@ -11,7 +11,7 @@
   # Create race variables based off the data set
   race_df <- ddf %>%
     count(race) %>%
-    filter(!str_detect(race, ",")) %>%
+    filter(!str_detect(race, ",")) %>% # assumes each race was picked alone at least once
     transmute(
       name = tolower(race) %>%
         str_extract("[\\w\\s]+") %>%
