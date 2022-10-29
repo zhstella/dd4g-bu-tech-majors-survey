@@ -1,0 +1,47 @@
+
+## {{{course}}} Course Satisfaction
+
+
+```{r {{{course_code}}}_input}
+input <- list(selected_course = "{{{course}}}")
+course_select_df <-
+  course_ldf %>%
+    filter(str_detect(question_text, input$selected_course))
+any_response <- nrow(course_select_df) > 0
+```
+
+
+### Overall Satisfaction
+
+```{r {{{course_code}}}_plot_overall, eval=any_response}
+course_select_df %>%
+  ggplot(aes(x = response)) +
+  geom_bar() +
+  scale_x_discrete(guide = guide_axis(n.dodge = 2))
+```
+
+### Satisfaction by Gender
+
+```{r {{{course_code}}}_plot_gender, eval=any_response}
+course_select_df %>%
+  group_by(gender) %>%
+  count(response, name = "count", .drop = FALSE) %>%
+  mutate(prop = count / sum(count)) %>%
+  ggplot(aes(x = response, fill = gender)) %>%
+  stack_freq_prop(title = input$selected_course)
+```
+
+
+
+### Satisfaction by Race
+
+```{r {{{course_code}}}_plot_race, eval=any_response}
+course_select_df %>%
+  simplify_race_var() %>%
+  group_by(race) %>%
+  count(response, name = "count", .drop = FALSE) %>%
+  mutate(prop = count / sum(count)) %>%
+  ggplot(aes(x = response, fill = race)) %>%
+  stack_freq_prop(title = input$selected_course)
+```
+

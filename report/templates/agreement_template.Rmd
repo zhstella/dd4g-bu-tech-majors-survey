@@ -1,0 +1,46 @@
+
+## How much do you agree with the statement "{{{agree_q}}}"?
+
+
+```{r {{{agree_q_code}}}_input}
+input <- list(selected_agr_q = "{{{agree_q}}}")
+agr_select_df <-
+  agreement_ldf %>%
+    filter(str_detect(question_text, input$selected_agr_q))
+```
+
+
+### Overall Agreement
+
+```{r {{{agree_q_code}}}_plot_overall}
+agr_select_df %>%
+  ggplot(aes(x = response)) +
+  geom_bar() +
+  scale_x_discrete(guide = guide_axis(n.dodge = 2))
+```
+
+### Agreement by Gender
+
+```{r {{{agree_q_code}}}_plot_gender}
+agr_select_df %>%
+  group_by(gender) %>%
+  count(response, name = "count", .drop = FALSE) %>%
+  mutate(prop = count / sum(count)) %>%
+  ggplot(aes(x = response, fill = gender)) %>%
+  stack_freq_prop(title = input$selected_agr_q)
+```
+
+
+
+### Agreement by Race
+
+```{r {{{agree_q_code}}}_plot_race}
+agr_select_df %>%
+  simplify_race_var() %>%
+  group_by(race) %>%
+  count(response, name = "count", .drop = FALSE) %>%
+  mutate(prop = count / sum(count)) %>%
+  ggplot(aes(x = response, fill = race)) %>%
+  stack_freq_prop(title = input$selected_agr_q)
+```
+

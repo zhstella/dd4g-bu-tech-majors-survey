@@ -29,10 +29,6 @@ ddf <- ddf %>%
     pronouns_other_txt = Q8_15_TEXT,
     options = Q9,
     prepared = Q10
-  ) %>%
-  rename_with(
-    ~ str_c("adj_", str_sub(., 5)),
-    .cols = starts_with("Q24")
   )
 usethis::use_data(ddf, overwrite = TRUE)
 
@@ -41,7 +37,7 @@ usethis::use_data(ddf, overwrite = TRUE)
 
 
 
-response_level <-
+satisfaction_level <-
   c(
     "Extremely dissatisfied",
     "Somewhat dissatisfied",
@@ -51,7 +47,7 @@ response_level <-
   )
 
 usethis::use_data(
-  response_level,
+  satisfaction_level,
   internal = TRUE,
   overwrite = TRUE
 )
