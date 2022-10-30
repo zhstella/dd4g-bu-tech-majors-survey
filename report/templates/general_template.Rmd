@@ -1,28 +1,28 @@
 
-## How much do you agree with the statement "{{{agree_q}}}"?
+## {{{title}}}
 
-
-```{r {{{agree_q_code}}}_input}
-input <- list(selected_agr_q = "{{{agree_q}}}")
-agr_select_df <-
-  agreement_ldf %>%
-    filter(str_detect(question_text, input$selected_agr_q))
+```{r {{{selected_q_code}}}_input}
+input <- list(selected_q = "{{{selected_q}}}")
+select_df <-
+  {{{which_df}}}_ldf %>%
+    filter(str_detect(question_text, input$selected_q))
+any_response <- nrow(select_df) > 0
 ```
 
 
-### Overall Agreement
+### {{{subsection_title}}} Overall
 
-```{r {{{agree_q_code}}}_plot_overall}
-agr_select_df %>%
+```{r {{{selected_q_code}}}_plot_overall, eval=any_response}
+select_df %>%
   ggplot(aes(x = response)) +
   geom_bar() +
   scale_x_discrete(guide = guide_axis(n.dodge = 2))
 ```
 
-### Agreement by Gender
+### {{{subsection_title}}} by Gender
 
-```{r {{{agree_q_code}}}_plot_gender}
-agr_select_df %>%
+```{r {{{selected_q_code}}}_plot_gender, eval=any_response}
+select_df %>%
   group_by(gender) %>%
   count(response, name = "count", .drop = FALSE) %>%
   mutate(prop = count / sum(count)) %>%
@@ -32,10 +32,10 @@ agr_select_df %>%
 
 
 
-### Agreement by Race
+### {{{subsection_title}}} by Race
 
-```{r {{{agree_q_code}}}_plot_race}
-agr_select_df %>%
+```{r {{{selected_q_code}}}_plot_race, eval=any_response}
+select_df %>%
   simplify_race_var() %>%
   group_by(race) %>%
   count(response, name = "count", .drop = FALSE) %>%

@@ -2,6 +2,26 @@
 # Load in course questions
 
 devtools::load_all()
+
+# set to -1 to make the whole book
+max_q <- 3
+
+# Load template
+
+general_template <- read_lines("report/templates/general_template.Rmd")
+
+whisker_template <- function(
+    selected_q,
+    selected_q_code,
+    title,
+    subsection_title,
+    which_df,
+    template = general_template
+){
+  whisker::whisker.render(template)
+}
+
+# Get course satisfactin questions
 course_num_re <- "[A-Z]{3} [A-Z]{2}\\W*[0-9]{3}"
 course_satisfaction_q <- original_question_df %>%
   filter(
@@ -11,52 +31,44 @@ course_satisfaction_q <- original_question_df %>%
   mutate(question_text = str_extract(question_text, course_num_re))
 
 # Write department satisfaction Rmd
-
-department_satisfaction_template <-
-  read_lines("report/templates/department_satisfaction_template.Rmd")
-
-dep_tbl <-
+(dep_tbl <-
   tibble(
-    department =
+    selected_q =
       sort(unique(str_sub(course_satisfaction_q$question_text, 1, 6)))
   ) %>%
-  mutate(dep_code = str_replace_all(department, "\\s*", ""))
-
-dep_tbl %>%
-  pmap_chr(function(department, dep_code){
-    whisker::whisker.render(
-      department_satisfaction_template
-    )
-  }) %>%
+  mutate(
+    selected_q_code = str_replace_all(selected_q, "\\W+", "_"),
+    title = str_glue("{selected_q} Department Satisfaction"),
+    subsection_title = "Satisfaction",
+    which_df = "course"
+  )) %>%
+  head(max_q) %>%
+  pmap_chr(whisker_template) %>%
   str_c(collapse = "\n\n") %>%
   str_c("# Department Satisfaction\n\n", .) %>%
   write_lines("report/01-Department-Satisfaction.Rmd")
 
 # Write course satisfaction Rmd
-course_satisfaction_template <-
-  read_lines("report/templates/course_satisfaction_template.Rmd")
 
-course_tbl <-
+(course_tbl <-
   tibble(
-    course =
+    selected_q =
       sort(unique(course_satisfaction_q$question_text))
   ) %>%
-  mutate(course_code = str_replace_all(course, "\\s*", "")) %>%
-  distinct(course_code, .keep_all = TRUE)
-
-course_tbl %>%
-  pmap_chr(function(course, course_code){
-    whisker::whisker.render(
-      course_satisfaction_template
-    )
-  }) %>%
+  mutate(
+    selected_q_code = str_replace_all(selected_q, "\\W+", "_"),
+    title = str_glue("{selected_q} Course Satisfaction"),
+    subsection_title = "Satisfaction",
+    which_df = "course"
+  )) %>%
+  head(max_q) %>%
+  pmap_chr(whisker_template) %>%
   str_c(collapse = "\n\n") %>%
   str_c("# Course Satisfaction\n\n", .) %>%
   write_lines("report/02-Course-Satisfaction.Rmd")
 
 
 # Get "agreement" questions
-
 agreement_level <- c(
   "Strongly disagree",
   "Never",
@@ -75,64 +87,47 @@ agreement_q <- original_question_df %>%
   ) %>%
   mutate(question_text = str_extract(question_text, "(?<=: - ).*"))
 
-agree_q_tbl <-
+(agree_q_tbl <-
   tibble(
-    agree_q =
+    selected_q =
       sort(unique(agreement_q$question_text))
   ) %>%
-  mutate(agree_q_code = str_replace_all(agree_q, "\\W+", "_")) %>%
-  distinct(agree_q_code, .keep_all = TRUE)
-
-agree_q_tbl %>%
-  pmap_chr(function(agree_q, agree_q_code){
-    whisker::whisker.render(
-      read_lines("report/templates/agreement_template.Rmd")
-    )
-  }) %>%
+  mutate(
+    selected_q_code = str_replace_all(selected_q, "\\W+", "_"),
+    title = str_glue("{selected_q} Agreement"),
+    subsection_title = "Agreement",
+    which_df = "agreement"
+  )) %>%
+  head(max_q) %>%
+  pmap_chr(whisker_template) %>%
   str_c(collapse = "\n\n") %>%
   str_c("# Agreement Statements\n\n\n", .) %>%
   write_lines("report/03-Agreement.Rmd")
 
 # Adjectives
-
-
-
-
 adjectives_q <- original_question_df %>%
   filter(
     str_detect(question_text, "adjectives that best represents")
   ) %>%
   mutate(question_text = str_extract(question_text, "(?<=\\. - ).*"))
 
-adjectives_ldf <- ddf %>%
-  pivot_longer(
-    cols = adjectives_q$question_id,
-    names_to = "question_id",
-    values_to = "response",
-    values_drop_na = TRUE
-  ) %>%
-  left_join(adjectives_q, by = "question_id") %>%
-  mutate(response = factor(response, levels = c("1", "2", "3", "4", "5")))
-
-adjectives_q_tbl <-
+(adjectives_q_tbl <-
   tibble(
-    adjectives_q =
+    selected_q =
       sort(unique(adjectives_q$question_text))
   ) %>%
-  mutate(adjectives_q_code = str_replace_all(adjectives_q, "\\W+", "_")) %>%
-  distinct(adjectives_q_code, .keep_all = TRUE)
-
-adjectives_q_tbl %>%
-  pmap_chr(function(adjectives_q, adjectives_q_code){
-    whisker::whisker.render(
-      read_lines("report/templates/adjectives_template.Rmd")
-    )
-  }) %>%
+  mutate(
+    selected_q_code = str_replace_all(selected_q, "\\W+", "_"),
+    title = str_glue("{selected_q} Adjective Range"),
+    subsection_title = "Adjective Range",
+    which_df = "adj"
+  )) %>%
+  head(max_q) %>%
+  pmap_chr(whisker_template) %>%
   str_c(collapse = "\n\n") %>%
   str_c("# Adjective Range Questions\n\n\n", .) %>%
-  write_lines("report/04-Agreement.Rmd")
+  write_lines("report/04-Adjectives.Rmd")
 
 # Serve Book
 bookdown::render_book("report/")
-bookdown::serve_book("report/")
 
