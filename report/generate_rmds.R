@@ -129,5 +129,5 @@ adjectives_q <- original_question_df %>%
   write_lines("report/04-Adjectives.Rmd")
 
 # Serve Book
-bookdown::render_book("report/")
+bookdown::render_book("report/", output_format = "all")
 
