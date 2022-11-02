@@ -117,7 +117,7 @@ ggplot(data  = dei_clean_data)+
 ```
 
 
-CS11 Satisfaction(X) and gender identity (Y)
+CS111 Satisfaction(X) and gender identity (Y)
 ```{r}
 library(ggplot2)
 ggplot(data  = dei_clean_data)+
