@@ -50,7 +50,7 @@
     right_join(q_to_course_df, by = "question_id") %>%
     select(RecordedDate, ResponseId, starts_with("race"), course, response) %>%
     filter(!is.na(response), response != "Did not take this course.") %>%
-    mutate(response = factor(response, levels = response_level)) %>%
+    mutate(response = factor(response, levels = satisfaction_level)) %>%
     mutate(course = str_c(
       str_extract(course, course_num_re),
       str_remove(course, course_num_re)

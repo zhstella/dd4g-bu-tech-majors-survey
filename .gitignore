@@ -3,3 +3,9 @@
 .Rdata
 .httr-oauth
 .DS_Store
+report/_book/*
+report/_bookdown_files/*
+report/*.md
+report/0*
+report/*_files/*
+report/report.rds

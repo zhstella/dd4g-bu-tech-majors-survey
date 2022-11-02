@@ -1,0 +1,46 @@
+
+## {{{title}}}
+
+```{r {{{selected_q_code}}}_input}
+input <- list(selected_q = "{{{selected_q}}}")
+select_df <-
+  {{{which_df}}}_ldf %>%
+    filter(str_detect(question_text, input$selected_q))
+any_response <- nrow(select_df) > 0
+```
+
+
+### {{{subsection_title}}} Overall
+
+```{r {{{selected_q_code}}}_plot_overall, eval=any_response}
+select_df %>%
+  ggplot(aes(x = response)) +
+  geom_bar() +
+  scale_x_discrete(guide = guide_axis(n.dodge = 2))
+```
+
+### {{{subsection_title}}} by Gender
+
+```{r {{{selected_q_code}}}_plot_gender, eval=any_response}
+select_df %>%
+  group_by(gender) %>%
+  count(response, name = "count", .drop = FALSE) %>%
+  mutate(prop = count / sum(count)) %>%
+  ggplot(aes(x = response, fill = gender)) %>%
+  stack_freq_prop(title = input$selected_agr_q)
+```
+
+
+
+### {{{subsection_title}}} by Race
+
+```{r {{{selected_q_code}}}_plot_race, eval=any_response}
+select_df %>%
+  simplify_race_var() %>%
+  group_by(race) %>%
+  count(response, name = "count", .drop = FALSE) %>%
+  mutate(prop = count / sum(count)) %>%
+  ggplot(aes(x = response, fill = race)) %>%
+  stack_freq_prop(title = input$selected_agr_q)
+```
+
