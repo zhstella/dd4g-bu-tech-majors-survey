@@ -1,0 +1,42 @@
+---
+title: "Beginning Bayes / Multilevel Regression"
+author: "Anna Yaggi"
+date: '2022-10-19'
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+Installing packages
+```{r}
+library(tidyverse)
+Sys.setenv(MAKEFLAGS = "-j4") # four cores used
+install.packages(c("Rcpp", "RcppEigen", "RcppParallel", "StanHeaders"), type = "source")
+install.packages("rstan", type = "source")
+
+```
+
+clean data, create a data set with major as a dummy variable, and 
+```{r}
+ddf$Q11_1[is.na(ddf$Q11_1)] <- 0
+Q11_1_dummy <- model.matrix(~Q11_1, data = ddf)
+ddf$major[is.na(ddf$major)] <- 0
+Qmajor_dummy <- model.matrix(~major, data = ddf)
+first_dummy <- cbind(Qmajor_dummy, Q11_1_dummy)
+View(first_dummy)
+```
+
+
+
+
+
+Notes:how to get it from categorical to numerical
+  use factors for to specify the levels (for response variables), use course_df
+  mutate (as integer)
+  look in report folder --> index file, has how to create the variables
+  
+  
+  
+  
