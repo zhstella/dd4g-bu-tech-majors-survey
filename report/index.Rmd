@@ -23,14 +23,15 @@ options(width = 60)
 knitr::opts_chunk$set(
   comment = "#>",
   collapse = TRUE,
-  echo = FALSE
-  )
+  echo = FALSE,
+  cache = TRUE
+)
 
 library(tidyverse)
 devtools::load_all()
 
 
-ddf %>% 
+ddf <- ddf %>% 
   mutate(
     gender = ifelse(
       str_detect(gender, "not listed"),
@@ -64,7 +65,14 @@ course_ldf <- ddf %>%
   ) %>%
   filter(response != "Did not take this course.") %>%
   left_join(course_satisfaction_q, by = "question_id") %>%
-  mutate(response = factor(response, levels = satisfaction_level))
+  mutate(
+    response = 
+     factor(
+       response,
+       levels = satisfaction_level,
+       ordered = TRUE
+    )
+  )
 
 
 # Get "agreement" questions

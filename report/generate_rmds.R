@@ -4,7 +4,7 @@
 devtools::load_all()
 
 # set to -1 to make the whole book
-max_q <- 3
+max_q <- -1
 
 # Load template
 
@@ -130,4 +130,11 @@ adjectives_q <- original_question_df %>%
 
 # Serve Book
 bookdown::render_book("report/", output_format = "all")
+
+# to incorporate
+# 1. Example statements of interpretation
+# 2. Tables with exact numbers
+
+
+
 
