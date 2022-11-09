@@ -1,0 +1,136 @@
+---
+title: "DEI Second Tables"
+author: "Anna Yaggi"
+date: '2022-09-28'
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+library(tidyverse)
+library(readxl)
+dei_clean_data <- read_excel("~/Desktop/Spark!/DEI Project/dei_clean_data.xlsx")
+attach(dei_clean_data)
+```
+
+
+Major breakdown table
+```{r}
+major = table(dei_clean_data$Q1)
+major_table = as.data.frame(major)
+names(major_table)[1] = "Major"
+major_table
+```
+
+Grad year breakdown table
+```{r}
+gradyear = table(dei_clean_data$Q2)
+gradyear_table = as.data.frame(gradyear)
+names(gradyear_table)[1] = "Graduation Year"
+gradyear_table
+```
+
+First Generation breakdown table
+```{r}
+firstgen = table(dei_clean_data$Q4)
+firstgen_table = as.data.frame(firstgen)
+names(firstgen_table)[1] = "First generation student?"
+firstgen_table
+```
+
+International student breakdown table
+```{r}
+inter = table(dei_clean_data$Q5)
+inter_table = as.data.frame(inter)
+names(inter_table)[1] = "International  student?"
+inter_table
+```
+
+Gender Identity Breakdown table
+```{r}
+genderI = table(dei_clean_data$Q6)
+genderI_table = as.data.frame(genderI)
+names(genderI_table)[1] = "Gender Identity"
+genderI_table
+```
+
+Race/Ethnicity breakdown table
+```{r}
+race = table(dei_clean_data$Q7)
+race_table = as.data.frame(race)
+names(race_table)[1] =  "selected race(s)/ ethnicity"
+race_table
+```
+
+Involved in Professional / academic orgs breakdown table***problem!!
+```{r}
+profaca = table(dei_clean_data$Q19)
+profaca_table = as.data.frame(profaca)
+names(profaca_table)[1] = "Involved in professional/academic organizations?"
+```
+
+Involved in other orgs breakdowntable***problem!!
+```{r}
+otherorg = table(dei_clean_data$Q20)
+otherorg_table = as.data.frame(otherorg)
+names(otherorg_table)[1] = "Involved in other organizations?"
+```
+
+Job breakdown table
+```{r}
+job = table(dei_clean_data$Q21)
+job_table = as.data.frame(job)
+names(job_table)[1] = "job?"
+job_table
+```
+
+Financial aid / Schol. Requirements table
+```{r}
+finaid = table(dei_clean_data$Q22)
+finaid_table = as.data.frame(finaid)
+names(finaid_table)[1] = "financial aid/ scholarship requirments?"
+finaid_table
+```
+
+
+
+
+Satisfaction with CS111 table
+```{r}
+CS111 = table(dei_clean_data$Q11_1)
+CS111_table =  as.data.frame(CS111)
+names(CS111_table)[1] = "Satsifaction with  CS111"
+CS111_table
+```
+
+
+
+International Student(Y), Financial Aid (X)
+```{r}
+library(ggplot2)
+ggplot(data  = dei_clean_data)+
+  geom_point(mapping = aes(x=stringr::str_wrap(Q22,15),stringr::str_wrap(Q5,15)), position = "jitter")
+
+```
+
+
+CS111 Satisfaction(X) and gender identity (Y)
+```{r}
+library(ggplot2)
+ggplot(data  = dei_clean_data)+
+  geom_point(mapping = aes(x=stringr::str_wrap(Q11_1,10),stringr::str_wrap(Q6,15)), position = "jitter")
+```
+
+```{r}
+library(ggplot2)
+ggplot(data  = dei_clean_data)+
+  geom_bar(mapping = aes(x=stringr::str_wrap(Q11_1,10), fill = Q11_1))
+```
+
+
+
+
+

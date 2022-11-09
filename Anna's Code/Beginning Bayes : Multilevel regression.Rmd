@@ -1,0 +1,131 @@
+---
+title: "Beginning Bayes / Multilevel Regression"
+author: "Anna Yaggi"
+date: '2022-10-19'
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+
+```
+
+
+Installing packages
+```{r}
+library(tidyverse)
+Sys.setenv(MAKEFLAGS = "-j4") # four cores used
+#install.packages(c("Rcpp", "RcppEigen", "RcppParallel", "StanHeaders"), type = "source")
+#install.packages("rstan", type = "source")
+library(dplyr)
+library(rvest)
+library(rstan)
+library(gdata)
+library(bayesplot)
+
+```
+
+clean data, create a data set with major as a dummy variable, and 
+```{r}
+setwd("~/DEI Tech Analysis/deiSurveyShiny/Anna's Code")
+
+#satisfaction with CS111 dummy matrix
+#Q11_1_dummy <- model.matrix(~Q11_1, data = ddf)
+qdf <- ddf %>% filter(!is.na(Q11_1), Q11_1 != "Did not take this course.")
+
+#satisfaction with CS11 ordered
+Q11_1_ordered_vec <- factor(qdf$Q11_1, levels = satisfaction_level)
+
+
+#major dummy matrix
+Qmajor_dummy <- model.matrix(~major, data = qdf)
+
+#international student dummy matrix
+qdf$international[is.na(qdf$international)] <- 0
+Qinternational_dummy <- model.matrix(~international, data = qdf)
+
+#gender dummy matrix
+qdf$gender[is.na(qdf$gender)] <- 0
+Qgender_dummy <- model.matrix(~gender, data = qdf)
+
+#race dummy matrix
+qdf$race[is.na(qdf$race)] <- 0
+Qrace_dummy <- model.matrix(~race, data = qdf)
+
+#binding all of the dummy matrices
+first_dummy <- cbind(Qmajor_dummy, Qinternational_dummy, Qgender_dummy, Qrace_dummy)
+
+
+```
+
+
+
+
+#creating the stan data (simple data set)
+```{r}
+X <- Qmajor_dummy
+y <- Q11_1_ordered_vec
+N <- length(y)
+K <- 5
+D <- dim(X)[2]
+
+stan_data <- list(N = N, K=K, D=D, X = X, y = y)
+#lm1 <- lm(y ~ X)
+#summary(lm1)
+```
+
+
+```{r}
+stanc("stan_model1.stan")
+stan_model1 <- "Stan_model1.stan"
+fit <- stan(file = stan_model1, data = stan_data, warmup = 500, iter = 1000, chains = 4, cores = 4, thin = 1)
+fit
+```
+
+OK, I understand what the problem is with the above model. The matrices are not the same size  <- they are the same length (640), but have a different amount of columns. I don't know what to do. The Stan user guide says the same thing. Not sure what to do. 
+We may have to go with a different argument to distribution. There is a decent amount of information on it in the user guide, I just have to get to the bottom of it
+
+
+
+
+
+
+
+
+
+Note: 
+I tried to use race_df to define the race variables but its not working
+#using race_df to assign race variables and then creating a dummy variable out of these
+ race_df <- ddf %>%
+    count(race) %>%
+    filter(!str_detect(race, ",")) %>% # assumes each race was picked alone at least once
+    transmute(
+      name = tolower(race) %>%
+        str_extract("[\\w\\s]+") %>%
+        str_remove_all("\\s*$") %>%
+        str_replace_all("\\s", "_") %>%
+        str_c("race_", .),
+      race_str = race
+    )
+  assign("race_df", race_df, envir = topenv())
+
+  race_choice_list <- as.list(race_df$name)
+  names(race_choice_list) <- race_df$race_str
+
+  assign("race_choice_list", race_choice_list, envir = topenv())
+  race_str_list <- as.list(race_df$race_str)
+  names(race_str_list) <- race_df$name
+  assign("race_str_list", race_str_list, envir = topenv())
+
+
+
+
+
+Notes:how to get it from categorical to numerical
+  use factors for to specify the levels (for response variables), use course_df
+  mutate (as integer)
+  look in report folder --> index file, has how to create the variables
+  
+  
+  
+  
