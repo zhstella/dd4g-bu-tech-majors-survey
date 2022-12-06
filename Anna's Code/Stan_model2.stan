@@ -9,25 +9,28 @@
 //    https://github.com/stan-dev/rstan/wiki/RStan-Getting-Started
 //
 
+// The input data is a vector 'y' of length 'N'.
 data {
   int<lower=2> K;
   int<lower=0> N;
-  int<lower=1> D;
-  array[N] row_vector[D] X;   // predictor matrix
+  int<lower=1> D_1;
+  int<lower=1> D_2;
+  array[N] row_vector[D_1] X_1;   // predictor matrix
+  array[N] row_vector[D_2] X_2;
   array[N] int<lower=1, upper=K>  y;   // outcome matrix
 }
 
 
 parameters {
-  vector[D] beta;
+  vector[D_1] beta;
+  vector[D_2] beta2;
   ordered[K - 1] c;
 }
 
 
 model {
   for (i in 1:N)
-    y[i] ~ ordered_logistic(X[1] * beta, c);
+    y[i] ~ ordered_logistic(X_1[1] * beta + X_2[1] * beta2,  c);
 
 }
-
 

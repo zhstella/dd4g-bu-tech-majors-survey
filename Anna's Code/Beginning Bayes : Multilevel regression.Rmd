@@ -49,8 +49,9 @@ qdf$gender[is.na(qdf$gender)] <- 0
 Qgender_dummy <- model.matrix(~gender, data = qdf)
 
 #race dummy matrix
-qdf$race[is.na(qdf$race)] <- 0
-Qrace_dummy <- model.matrix(~race, data = qdf)
+#qdf$race[is.na(qdf$race)] <- 0
+#Qrace_dummy <- model.matrix(~race, data = qdf)
+
 
 #binding all of the dummy matrices
 first_dummy <- cbind(Qmajor_dummy, Qinternational_dummy, Qgender_dummy, Qrace_dummy)
@@ -61,34 +62,79 @@ first_dummy <- cbind(Qmajor_dummy, Qinternational_dummy, Qgender_dummy, Qrace_du
 
 
 
+
 #creating the stan data (simple data set)
 ```{r}
-X <- Qmajor_dummy
-y <- Q11_1_ordered_vec
+#X <- Qmajor_dummy
+#y <- as.integer(Q11_1_ordered_vec)
+#N <- length(y)
+#K <- 5
+#D <- dim(X)[2]
+
+#stan_data1 <- list(N = N, K=K, D=D, X = X, y = y)
+
+```
+
+#multivariate try
+```{r}
+X_1 <- Qrace_dummy
+X_2 <- Qinternational_dummy
+y <- as.integer(Q11_1_ordered_vec)
+N <- length(y)
+K <- 5
+D_1 <- dim(X_1)[2]
+D_2 <- dim(X_2)[2]
+
+stan_data2 <- list(N = N, K = K, D_1 = D_1, D_2 = D_2, X_1= X_1, X_2 = X_2, y = y)
+```
+
+
+#model3
+```{r}
+X <- Qinternational_dummy
+y <- as.integer(Q11_1_ordered_vec)
 N <- length(y)
 K <- 5
 D <- dim(X)[2]
 
-stan_data <- list(N = N, K=K, D=D, X = X, y = y)
-#lm1 <- lm(y ~ X)
-#summary(lm1)
+stan_data3 <- list(N = N, K=K, D=D, X = X, y = y)
+
+```
+
+
+#running model1
+```{r}
+stanc("stan_model1.stan")
+stan_model1 <- "Stan_model1.stan"
+fit <- stan(file = stan_model1, data = stan_data1, warmup = 50, iter = 100, chains = 4, cores = 4, thin = 1)
+fit
+```
+
+#running model3
+```{r}
 ```
 
 
 ```{r}
-stanc("stan_model1.stan")
-stan_model1 <- "Stan_model1.stan"
-fit <- stan(file = stan_model1, data = stan_data, warmup = 500, iter = 1000, chains = 4, cores = 4, thin = 1)
-fit
+stanc("stan_model3.stan")
+stan_model3 <- "Stan_model3.stan"
+fit3 <- stan(file = stan_model3, data = stan_data3, warmup = 50, iter = 100, chains = 4, cores = 4, thin = 1)
+fit3
+plot(fit3)
 ```
 
-OK, I understand what the problem is with the above model. The matrices are not the same size  <- they are the same length (640), but have a different amount of columns. I don't know what to do. The Stan user guide says the same thing. Not sure what to do. 
-We may have to go with a different argument to distribution. There is a decent amount of information on it in the user guide, I just have to get to the bottom of it
 
+```{r}
+stanc("Stan_model2.stan")
+stan_model2 <- "Stan_model2.stan"
+fit2 <- stan(file = stan_model2, data = stan_data2, warmup = 50, iter = 100, chains = 2, cores = 2, thin = 1)
+fit2
+plot(fit2)
+```
 
-
-
-
+looking at this b2 seems to have the smallest variance , and i believe that 
+corresponds to the not international, while b4 seems to have a really large 
+variance and i believe that corresponds to the yes international
 
 
 
