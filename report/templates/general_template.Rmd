@@ -17,30 +17,140 @@ select_df %>%
   ggplot(aes(x = response)) +
   geom_bar() +
   scale_x_discrete(guide = guide_axis(n.dodge = 2))
+
+select_df %>% 
+  count(response, name = "number") %>%
+  mutate(percent = number / sum(number)) %>% 
+  gt::gt() %>% 
+    fmt_percent(percent, decimals = 1)
+
+ex <- select_df %>% 
+  summarize(nr = sum(response == response[1]), response = response[1], n = n())
+nt <- ex$n
 ```
+
+This represents a total of `r ex$n` responses. Of these `r ex$nr` responses were `r ex$response`, representing `r scales::percent(ex$nr/ex$n)` of the total.
 
 ### {{{subsection_title}}} by Gender
 
 ```{r {{{selected_q_code}}}_plot_gender, eval=any_response}
-select_df %>%
+gdf <- select_df %>%
   group_by(gender) %>%
-  count(response, name = "count", .drop = FALSE) %>%
-  mutate(prop = count / sum(count)) %>%
+  count(response, name = "count") %>%
+  mutate(prop = count / sum(count)) 
+
+gdf %>%
   ggplot(aes(x = response, fill = gender)) %>%
   stack_freq_prop(title = input$selected_agr_q)
+
+gdf %>% 
+  transmute(
+    gender,
+    response,
+    value = str_glue("{count} ({scales::percent(prop)})")
+  ) %>% 
+  pivot_wider(names_from = "response", values_from = "value") %>% 
+  ungroup() %>% 
+  gt::gt(rowname_col = "race") %>% 
+  sub_missing()
+
+ex <- gdf %>% mutate(n = sum(count)) %>% ungroup() %>% filter(row_number() == 1)
+
 ```
 
-
+Out of the `r nt` total respondents, `r ex$n` (`r scales::percent(ex$n / nt)`) indicated `r ex$gender` as their gender.
+Of these `r ex$n`, `r ex$count` (`r scales::percent(ex$prop)`) responded  with `r ex$response`.
 
 ### {{{subsection_title}}} by Race
 
 ```{r {{{selected_q_code}}}_plot_race, eval=any_response}
-select_df %>%
-  simplify_race_var() %>%
+rdf <- select_df %>%
   group_by(race) %>%
-  count(response, name = "count", .drop = FALSE) %>%
-  mutate(prop = count / sum(count)) %>%
+  count(response, name = "count") %>%
+  mutate(prop = count / sum(count))
+
+rdf %>%
   ggplot(aes(x = response, fill = race)) %>%
   stack_freq_prop(title = input$selected_agr_q)
+
+
+rdf %>% 
+  transmute(
+    race,
+    response,
+    value = str_glue("{count}\n\n({scales::percent(prop)})")
+  ) %>% 
+  pivot_wider(names_from = "response", values_from = "value") %>% 
+  ungroup() %>% 
+  gt::gt(rowname_col = "race") %>% 
+  sub_missing()
+ex <- rdf %>% mutate(n = sum(count)) %>% ungroup() %>% filter(row_number() == 1)
+
 ```
 
+Out of the `r nt` total respondents, `r ex$n` (`r scales::percent(ex$n / nt)`) indicated `r ex$race` as their race.
+Of these `r ex$n`, `r ex$count` (`r scales::percent(ex$prop)`) responded  with `r ex$response`.
+
+
+
+### {{{subsection_title}}} by International status
+
+```{r {{{selected_q_code}}}_plot_international, eval=any_response}
+idf <- select_df %>%
+  group_by(international) %>%
+  count(response, name = "count") %>%
+  mutate(prop = count / sum(count))
+
+idf %>%
+  ggplot(aes(x = response, fill = international)) %>%
+  stack_freq_prop(title = input$selected_agr_q)
+
+
+idf %>% 
+  transmute(
+    international,
+    response,
+    value = str_glue("{count}\n\n({scales::percent(prop)})")
+  ) %>% 
+  pivot_wider(names_from = "response", values_from = "value") %>% 
+  ungroup() %>% 
+  gt::gt(rowname_col = "international") %>% 
+  sub_missing()
+ex <- idf %>% mutate(n = sum(count)) %>% ungroup() %>% filter(row_number() == 1)
+
+```
+
+Out of the `r nt` total respondents, `r ex$n` (`r scales::percent(ex$n / nt)`) answered "`r ex$international`" to the question "Are you an international student?".
+Of these `r ex$n`, `r ex$count` (`r scales::percent(ex$prop)`) responded  with `r ex$response`.
+
+
+
+### {{{subsection_title}}} by First-gen college status
+
+```{r {{{selected_q_code}}}_plot_first_gen, eval=any_response}
+fdf <- select_df %>%
+  group_by(first_gen) %>%
+  count(response, name = "count") %>%
+  mutate(prop = count / sum(count))
+
+fdf %>%
+  ggplot(aes(x = response, fill = first_gen)) %>%
+  stack_freq_prop(title = input$selected_agr_q)
+
+
+fdf %>% 
+  transmute(
+    first_gen,
+    response,
+    value = str_glue("{count}\n\n({scales::percent(prop)})")
+  ) %>% 
+  pivot_wider(names_from = "response", values_from = "value") %>% 
+  ungroup() %>% 
+  gt::gt(rowname_col = "first_gen") %>% 
+  sub_missing()
+ex <- fdf %>% mutate(n = sum(count)) %>% ungroup() %>% filter(row_number() == 1)
+
+```
+
+Out of the `r nt` total respondents, `r ex$n` (`r scales::percent(ex$n / nt)`) answered "`r ex$first_gen`" to the question "Are you a first generation college student?".
+Of these `r ex$n`, `r ex$count` (`r scales::percent(ex$prop)`) responded  with `r ex$response`.
