@@ -1,0 +1,153 @@
+---
+title: "Bayes Continued"
+author: "Anna Yaggi"
+date: '2022-11-30'
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(tidyverse)
+Sys.setenv(MAKEFLAGS = "-j4") # four cores used
+library(dplyr)
+library(rvest)
+library(rstan)
+library(gdata)
+library(bayesplot)
+library(ggplot2)
+```
+
+```{r}
+setwd("~/DEI Tech Analysis/deiSurveyShiny/Anna's Code")
+anna_course_df <- course_df
+attach(anna_course_df)
+#View(anna_course_df)
+```
+
+***detect CAS***
+```{r}
+#creating a variable to detect whether a course is in CAS or not#
+detect_CAS <- str_detect(course, "CAS")
+detect_CAS <- ifelse(detect_CAS == TRUE, 1, 0)
+detect_CAS <- as.vector(detect_CAS)
+anna_course_df <- cbind(anna_course_df, detect_CAS)
+#View(anna_course_df)
+```
+
+***detect ENG***
+```{r}
+#creating a variable to detect whether a course is in ENG or not#
+detect_ENG <- str_detect(course, "ENG")
+detect_ENG <- ifelse(detect_ENG == TRUE, 1, 0)
+detect_ENG <- as.vector(detect_ENG)
+anna_course_df <- cbind(anna_course_df, detect_ENG)
+#View(anna_course_df)
+```
+
+***detect CS***
+```{r}
+#creating a variable to detect whether a course is in CS or not#
+detect_CS <- str_detect(course, "CS")
+detect_CS <- ifelse(detect_CS == TRUE, 1, 0)
+detect_CS <- as.vector(detect_CS)
+anna_course_df <- cbind(anna_course_df, detect_CS)
+#View(anna_course_df)
+```
+
+***detect DS***
+```{r}
+#creating a variable to detect whether a course is in DS or not#
+detect_DS <- str_detect(course, "DS")
+detect_DS <- ifelse(detect_DS == TRUE, 1, 0)
+detect_DS <- as.vector(detect_DS)
+anna_course_df <- cbind(anna_course_df, detect_DS)
+#View(anna_course_df)
+```
+
+***detect MA***
+```{r}
+#creating a variable to detect whether a course is in MA or not#
+detect_MA <- str_detect(course, "MA")
+detect_MA <- ifelse(detect_MA == TRUE, 1, 0)
+detect_MA <- as.vector(detect_MA)
+anna_course_df <- cbind(anna_course_df, detect_MA)
+#View(anna_course_df)
+```
+
+
+***detect EK***
+```{r}
+#creating a variable to detect whether a course is in EK or not#
+detect_EK <- str_detect(course, "EK")
+detect_EK <- ifelse(detect_EK == TRUE, 1, 0)
+detect_EK <- as.vector(detect_EK)
+anna_course_df <- cbind(anna_course_df, detect_EK)
+View(anna_course_df)
+```
+
+***detect IS***
+```{r}
+#creating a variable to detect whether a course is in EK or not#
+detect_IS <- str_detect(course, "IS")
+detect_IS <- ifelse(detect_IS == TRUE, 1, 0)
+detect_IS <- as.vector(detect_IS)
+anna_course_df <- cbind(anna_course_df, detect_IS)
+#View(anna_course_df)
+```
+
+#note: there were very few PY, CH, and EC courses, so i chose to use these all combined as a reference variable
+
+***creating a variable to extract the class LEVEL***
+```{r}
+extract_level <- str_extract(course, "\\d+")
+extract_level <- strtoi(extract_level)
+extract_level <- extract_level/100
+extract_level <- floor(extract_level)
+#anna_course_df <- cbind(anna_course_df, extract_level)
+#View(anna_course_df)
+```
+
+
+***creating a variable to detect the class level 100***
+```{r}
+detect_level1 <- str_detect(extract_level, "1")
+detect_level1 <- ifelse(detect_level1 == TRUE, 1, 0)
+anna_course_df <- cbind(anna_course_df, detect_level1)
+#View(anna_course_df)
+```
+
+***creating a variable to detect the class level 200***
+```{r}
+detect_level2 <- str_detect(extract_level, "2")
+detect_level2 <- ifelse(detect_level2 == TRUE, 1, 0)
+anna_course_df <- cbind(anna_course_df, detect_level2)
+View(anna_course_df)
+```
+
+***creating a variable to detect the class level 300***
+```{r}
+detect_level3 <- str_detect(extract_level, "3")
+detect_level3 <- ifelse(detect_level3 == TRUE, 1, 0)
+anna_course_df <- cbind(anna_course_df, detect_level3)
+#View(anna_course_df)
+```
+
+***creating a variable to detect the class level 400***
+```{r}
+detect_level4 <- str_detect(extract_level, "4")
+detect_level4 <- ifelse(detect_level4 == TRUE, 1, 0)
+anna_course_df <- cbind(anna_course_df, detect_level4)
+View(anna_course_df)
+```
+
+
+
+
+
+
+
+
+
+
+
+

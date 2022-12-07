@@ -9,6 +9,7 @@
 //    https://github.com/stan-dev/rstan/wiki/RStan-Getting-Started
 //
 
+// The input data is a vector 'y' of length 'N'.
 data {
   int<lower=2> K;
   int<lower=0> N;
@@ -29,5 +30,3 @@ model {
     y[i] ~ ordered_logistic(X[1] * beta, c);
 
 }
-
-
