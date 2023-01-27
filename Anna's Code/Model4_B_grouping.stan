@@ -13,27 +13,30 @@
 data {
   int<lower=2> K;
   int<lower=0> N;
+  int<lower=0> N_c;
   int<lower=1> D_dep;
   int<lower=1> D_lev;
+  int<lower=1> D_race;
   array[N] row_vector[D_dep] X_dep;   // predictor matrix
   array[N] row_vector[D_lev] X_lev;
+  array[N] row_vector[D_race] X_race;
   array[N] int<lower=1, upper=K>  y;   // outcome matrix
 }
-
 
 parameters {
   vector[D_dep] Dep_beta;
   vector[D_lev] Lev_beta;
+  vector[D_race] Race_beta;
+  ordered[N_c] course_beta;
   ordered[K - 1] c;
 }
 
 
 model {
+  for (i in 1:N_c)
+    course_beta[i] = Dep_beta[D_dep[i]] + Lev_beta_beta[D_lev[i]] + eta[i];
+
   for (i in 1:N)
-    Epsilon[K] ~ N
-    Course_beta[K] = Dep_beta[X_dep[K]] + Lev_beta[X_lev[K]] + Epsilon[K]
-
-    #? y[i] ~ ordered_logistic(X_dep[1] * Dep_beta + X_lev[1] * Lev_beta,  c);
-
+    response[i] = ordinal(course_beta[course[i]] + Race_beta[D_race[i]]);
 }
 

@@ -11,21 +11,26 @@
 
 // The input data is a vector 'y' of length 'N'.
 data {
+  int<lower=2> K;
   int<lower=0> N;
-  vector[N] y;
+  int<lower=1> D_dep;
+  int<lower=1> D_dep;
+  array[N] row_vector[D_dep] X_dep;   // predictor matrix
+  array[N] row_vector[D_lev] X_lev;
+  array[N] int<lower=1, upper=K>  y;   // outcome matrix
 }
 
-// The parameters accepted by the model. Our model
-// accepts two parameters 'mu' and 'sigma'.
+
 parameters {
-  real mu;
-  real<lower=0> sigma;
+  vector[D_dep] Dep_beta;
+  vector[D_lev] Lev_beta;
+  ordered[K - 1] c;
 }
 
-// The model to be estimated. We model the output
-// 'y' to be normally distributed with mean 'mu'
-// and standard deviation 'sigma'.
+
 model {
-  y ~ normal(mu, sigma);
+  for (i in 1:N)
+    y[i] ~ ordered_logistic(X_dep[1] * Dep_betabeta + X_lev[1] * Lev_beta,  c);
+
 }
 
