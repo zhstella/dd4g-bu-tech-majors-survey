@@ -1,6 +1,5 @@
 
 library(tidyverse)
-library(gt)
 devtools::load_all()
 
 ddf_s <- ddf %>%
