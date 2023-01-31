@@ -19,7 +19,7 @@ library(ggplot2)
 
 ```{r}
 setwd("~/DEI Tech Analysis/deiSurveyShiny/Anna's Code")
-anna_course_df <- course_df
+anna_course_df <- head(course_df,100)
 attach(anna_course_df)
 #View(anna_course_df)
 ```
@@ -82,7 +82,7 @@ detect_EK <- str_detect(course, "EK")
 detect_EK <- ifelse(detect_EK == TRUE, 1, 0)
 detect_EK <- as.vector(detect_EK)
 anna_course_df <- cbind(anna_course_df, detect_EK)
-View(anna_course_df)
+#View(anna_course_df)
 ```
 
 ***detect IS***
@@ -121,7 +121,7 @@ anna_course_df <- cbind(anna_course_df, detect_level1)
 detect_level2 <- str_detect(extract_level, "2")
 detect_level2 <- ifelse(detect_level2 == TRUE, 1, 0)
 anna_course_df <- cbind(anna_course_df, detect_level2)
-View(anna_course_df)
+#View(anna_course_df)
 ```
 
 ***creating a variable to detect the class level 300***
@@ -140,12 +140,70 @@ anna_course_df <- cbind(anna_course_df, detect_level4)
 View(anna_course_df)
 ```
 
+***Department Dummy Matrix***
+```{r}
+dep_dummy <- cbind(detect_CS, detect_DS, detect_EK, detect_IS, detect_MA)
+View(dep_dummy)
+```
+
+Level Dummy Matrix
+```{r}
+lev_dummy <- cbind(detect_level1, detect_level2, detect_level3, detect_level4)
+View(lev_dummy)
+```
+
+***race dummy variable***
+```{r}
+race_dummy <- cbind(anna_course_df$race_asian, anna_course_df$race_black, anna_course_df$race_hispanic, anna_course_df$race_i_do_not_wish_to_disclose, anna_course_df$race_middle_eastern, anna_course_df$race_native_american, anna_course_df$race_native_hawaiian, anna_course_df$race_other, anna_course_df$race_white)
+race_dummy <- ifelse(race_dummy == TRUE, 1, 0)
+View(race_dummy)
+```
 
 
+***Creating a variable to create levels of satisfaction***
+```{r}
+#a little stuck here
+```
+
+```{r}
+length(unique(anna_course_df$course))
+length(anna_course_df$response)
+```
 
 
+```{r}
+View(anna_course_df)
+```
 
 
+#creating the stan data 
+#for X = course and Y = satsifaction level
+##question: here X is course, but shouldn't it be demographic information?
+```{r}
+X_dep <- dep_dummy
+X_lev <- lev_dummy
+X_race <- race_dummy
+y <- as.integer(anna_course_df$response)
+#number of courses
+ 
+#number of columns
+#K <- 9
+D_dep <- dim(X_dep)[2]
+D_lev <- dim(X_lev)[2]
+D_race <- dim(X_race)[2]
+N <- length(anna_course_df$response)
+N_c <- length(unique(anna_course_df$course))
+
+Model4_grouping_data <- list(N = N, N_c = N_c, D_dep=D_dep, D_lev = D_lev, D_race = D_race, X_dep = X_dep, X_lev = X_lev, X_race = X_race, y = y)
+
+```
+
+#running model 4 grouping
+```{r}
+stanc("Model4_B_grouping.stan")
+Model4B_grouping <- "Model4_B_grouping.stan"
+fit <- stan(file = Model4B_grouping, data = Model4B_grouping_data, warmup = 50, iter = 100, chains = 1, cores = 4, thin = 1)
+```
 
 
 
