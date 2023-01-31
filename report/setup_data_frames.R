@@ -5,11 +5,11 @@ devtools::load_all()
 
 ddf_s <- ddf %>%
   mutate(
-    gender = ifelse(
+    gender = as_factor(ifelse(
       str_detect(gender, "not listed"),
       "Pref. not listed",
       gender
-    ),
+    )),
     international = as_factor(replace_na(international, "No response")),
     first_gen = as_factor(replace_na(first_gen, "No response"))
   ) %>%
@@ -63,11 +63,23 @@ agreement_level <- c(
   "Prefer not to say"
 )
 
+frequency_level <- c(
+  "Strongly disagree",
+  "Never",
+  "Disagree",
+  "Rarely",
+  "Agree",
+  "Sometimes",
+  "Strongly agree",
+  "Often times",
+  "Prefer not to say"
+)
+
 agreement_q <- original_question_df %>%
   filter(
     str_detect(question_text, "agreement")
   ) %>%
-  mutate(question_text = str_extract(question_text, "(?<=: - ).*"))
+  mutate(question_text = str_c(question_id, " ", str_extract(question_text, "(?<=: - ).*")))
 
 agreement_ldf <- ddf_s %>%
   pivot_longer(

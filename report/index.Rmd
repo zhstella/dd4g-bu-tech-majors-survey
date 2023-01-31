@@ -15,7 +15,7 @@ description: |
 
 # Overall breakdowns
 
-```{r setup, include=FALSE,child=}
+```{r setup, include=FALSE}
 # example R options set globally
 options(width = 60)
 
@@ -29,7 +29,8 @@ knitr::opts_chunk$set(
 
 ```
 
-```{r setup_data_frames, include=FALSE}
+```{r setup_data_frames, include=FALSE, cache=FALSE}
+# devtools::load_all()
 source("setup_data_frames.R")
 ```
 
@@ -39,12 +40,178 @@ In what follows, each chapter is for a different subset of questions.
 
 The chapter on departments aggregates all responses to questions related to courses in the indicated department.
 
+For the chapter on [Agreement Statements], I tried to re-order them the way you wanted but I might need to work a bit more on that.
+
+### Minor survey issues
+
+Here I'm just tracking some issues I found with the survey.
+
+* Q11_1 and Q14_11 both are about CAS CS 111
+* Q13_5 refers to MA614 but it should be 214
+
+### Feedback requested
+
+* Did you want Question 36 & 38 breakdowns for each of the other questions. I currently am including them in [Discrimination Questions].
+* Let me know what you think about the breakdowns below for the departments.
+
 ## Overview
 
-```{r}
-ddf_s %>% count(gender, race) %>% pivot_wider(names_from = gender, values_from = n) %>% 
+First, we look at a couple of counts for the cross-tabulation of Race and Female.
+
+### General overview
+
+```{r race_gender}
+ddf_s %>%
+  count(gender, race) %>%
+  pivot_wider(names_from = gender, values_from = n, values_fill = 0) %>% 
   # rowwise() %>% 
   # mutate(Total = sum(c_across(where(is.numeric)), na.rm = TRUE)) %>% 
-  janitor::adorn_totals(where = c("row", "col")) %>% 
+  janitor::adorn_totals(where = c("row", "col")) %>%
   gt::gt(rowname_col = "race")
+```
+
+
+### Race details
+Note, for Race, students who answered with more than one race were all categorized as 2 or more for the purpose of simplifying the analysis. We also grouped together all single 
+Race responses with fewer than 20 response into other.
+
+Below shows all the counts for each of multiple Race selections for the "2 or more" category.
+```{r race_2_or_more}
+ddf_s %>%
+  filter(race == "2 or more") %>%
+  count(race_full) %>%
+  arrange(-n) %>%
+  gt::gt(rowname_col = "race_full")
+```
+
+Below shows all the counts for each of single Race selections for the "Other" category.
+```{r race_other}
+ddf_s %>%
+  filter(race == "Other") %>%
+  count(race_full) %>%
+  arrange(-n) %>%
+  gt::gt(rowname_col = "race_full")
+```
+
+### Discrimination question
+
+```{r discrimination}
+dis_ldf %>% count(question_text, response) %>% pivot_wider(names_from = "response", values_from = "n") %>% 
+  gt::gt(rowname_col = "question_text")
+
+dis_ldf %>% group_by(question_text, race) %>%
+  summarise(n = mean(response != "No", na.rm = TRUE)) %>% 
+  pivot_wider(names_from = "race", values_from = "n") %>%
+  ungroup() %>% 
+  gt::gt(rowname_col = "question_text", caption = "Percent of respondents that responded anything other than No for the indicated question by race") %>%
+  gt::fmt_percent(-question_text)
+
+
+dis_ldf %>% group_by(question_text, gender) %>%
+  summarise(n = mean(response != "No", na.rm = TRUE)) %>% 
+  pivot_wider(names_from = gender, values_from = n) %>%
+  ungroup() %>% 
+  gt::gt(rowname_col = "question_text", caption = "Percent of respondents that responded anything other than No for the indicated question by gender") %>%
+  gt::fmt_percent(-question_text)
+```
+
+### Number of courses per respondent
+
+```{r number_of_courses_per_student}
+course_df %>% count(ResponseId) %>% 
+  ggplot(aes(x = n)) + 
+  geom_bar() +
+  scale_x_continuous("# of questions answered") +
+  scale_y_continuous("# of students")
+```
+Above is a bar chart for how many courses each student responded to. The horizontal axis indicates the number of courses and the vertical axis indicates the number of students who answered that many questions.
+
+## Department comparisons
+
+
+
+```{r dep_compare_setup}
+dep_facet_plot <- function(g){
+  g +
+    geom_col(
+      aes(x = prop),
+      position = position_dodge(preserve = "single")
+    ) +
+    scale_y_discrete(drop = FALSE) +
+    scale_x_continuous(labels = scales::percent) +
+    scale_fill_discrete("", drop = FALSE, position = "bottom") +
+    theme(legend.position = "bottom") +
+    facet_wrap(~dep)
+}
+respondent_threshold <- 50
+dep_sum_df <- course_ldf %>% 
+  mutate(dep = str_sub(question_text, 1, 6)) %>%
+  group_by(dep) %>%
+  filter(n_distinct(ResponseId) > respondent_threshold)
+
+dep_sum_show <- function(dep_sum_df, var){
+  vq <- enquo(var)
+  dep_sum_df %>% 
+    count_prop_complete(dep, !!vq) %>% 
+    ggplot(aes(y = response, fill = !!vq)) %>% 
+    dep_facet_plot() %>% 
+    print()
+  
+  dep_sum_df %>% 
+    count_prop_complete(dep, !!vq, .fill = FALSE) %>% 
+    summarise(m = sum(prop * as.numeric(response), na.rm = TRUE), n = sum(count, na.rm = TRUE)) %>%
+    mutate(
+      m = round(ifelse(m == 0, NA, m), 2), 
+      s = ifelse(is.na(m), "---", str_glue("{m} \n({n})"))
+    ) %>%
+    select(-m,-n) %>% 
+    pivot_wider(names_from = dep, values_from = s, values_fill = NA) %>%
+    gt::gt() %>% 
+    gt::tab_header(
+      title = "Average response if we code responses from 1=Extremely Dissatisfied to 5=Extremely satisfied. (Number of response in parentheses.)"
+    )
+
+}
+```
+
+The plots below should interpreted in the same way as the proportion plots in the following chapters.
+We show only departments with at least `r respondent_threshold` distinct respondents.
+
+### By gender
+
+```{r dep_gender}
+dep_sum_df %>% dep_sum_show(gender)
+```
+
+### By race
+
+```{r dep_race}
+dep_sum_df %>% 
+  dep_sum_show(race)
+```
+
+### By first generation status
+
+```{r dep_first_gen}
+dep_sum_df %>% 
+  dep_sum_show(first_gen)
+```
+
+### By international status
+
+```{r dep_international}
+dep_sum_df %>% 
+  dep_sum_show(international)
+```
+
+
+```{r for_testing, eval=FALSE}
+input <- list(selected_q = "CAS CS131")
+input <- list(selected_q = "CAS CS235")
+select_df <- course_ldf %>%
+    filter(str_detect(question_text, input$selected_q))
+
+input$selected_q <- agree_q_tbl$selected_q[1]
+select_df <- agreement_ldf %>%
+    filter(str_detect(question_text, input$selected_q))
 ```

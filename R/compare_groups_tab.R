@@ -30,9 +30,11 @@ compare_groups_ui <- function(id) {
 
 compare_group_server <- function(id) {
   moduleServer(id, function(input, output, session) {
+    g1 <- reactive({input$group1}) %>% debounce(1500)
+    g2 <- reactive({input$group2}) %>% debounce(1500)
     course_compare <- reactive({
-      g1 <- input$group1
-      g2 <- input$group2
+      g1 <- g1()
+      g2 <- g2()
       course_df %>%
         group_by(course) %>%
         nest() %>%
@@ -57,7 +59,7 @@ compare_group_server <- function(id) {
     })
     output$table <- renderDT(
       {
-        if (length(input$group1) > 0 && length(input$group2) > 0) {
+        if (length(g1()) > 0 && length(g2()) > 0) {
           course_compare()
         } else {
           tibble(Note = "Please select at least one item for each group on the left.")
@@ -67,8 +69,8 @@ compare_group_server <- function(id) {
       rownames = FALSE
     )
     output$compare_plot <- renderPlot({
-      r1 <- input$group1
-      r2 <- input$group2
+      r1 <- g1()
+      r2 <- g2()
       if (!is.null(input$table_rows_selected)) {
         course_selected <- course_compare()$course[input$table_rows_selected]
         g <- course_df %>%

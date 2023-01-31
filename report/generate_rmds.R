@@ -4,7 +4,7 @@
 devtools::load_all()
 
 # set to -1 to make the whole book
-max_q <- -1
+max_q <- 1
 
 # Load template
 
@@ -16,7 +16,7 @@ whisker_template <- function(
     title,
     subsection_title,
     which_df,
-    template = general_template
+    template = general_template, ...
 ){
   whisker::whisker.render(template)
 }
@@ -57,7 +57,7 @@ course_satisfaction_q <- original_question_df %>%
   ) %>%
   mutate(
     selected_q_code = str_replace_all(selected_q, "\\W+", "_"),
-    title = str_glue("{selected_q} Course Satisfaction"),
+    title = str_glue("{selected_q}"),
     subsection_title = "Satisfaction",
     which_df = "course"
   )) %>%
@@ -85,16 +85,14 @@ agreement_q <- original_question_df %>%
   filter(
     str_detect(question_text, "agreement")
   ) %>%
-  mutate(question_text = str_extract(question_text, "(?<=: - ).*"))
+  mutate(question_text = str_c(question_id, " ", str_extract(question_text, "(?<=: - ).*")))
 
 (agree_q_tbl <-
-  tibble(
-    selected_q =
-      sort(unique(agreement_q$question_text))
-  ) %>%
+  agreement_q %>%
+    transmute(selected_q = question_text, question_id) %>%
   mutate(
     selected_q_code = str_replace_all(selected_q, "\\W+", "_"),
-    title = str_glue("{selected_q} Agreement"),
+    title = str_glue("{selected_q}"),
     subsection_title = "Agreement",
     which_df = "agreement"
   )) %>%
@@ -118,7 +116,7 @@ adjectives_q <- original_question_df %>%
   ) %>%
   mutate(
     selected_q_code = str_replace_all(selected_q, "\\W+", "_"),
-    title = str_glue("{selected_q} Adjective Range"),
+    title = str_glue("{selected_q}"),
     subsection_title = "Adjective Range",
     which_df = "adj"
   )) %>%
@@ -141,7 +139,7 @@ dis_q <- original_question_df %>%
   ) %>%
   mutate(
     selected_q_code = str_replace_all(selected_q, "\\W+", "_"),
-    title = str_glue("{selected_q} Adjective Range"),
+    title = str_glue("{selected_q}"),
     subsection_title = "Discrimination",
     which_df = "dis"
   )) %>%
@@ -153,12 +151,5 @@ dis_q <- original_question_df %>%
 
 # Serve Book
 bookdown::render_book("report/", output_format = "all")
-
-# to incorporate
-
-# 1. Example statements of interpretation
-# 2. Tables with exact numbers
-
-
 
 

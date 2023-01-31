@@ -1,5 +1,5 @@
 
-## {{{title}}}
+## {{{title}}} {.tabset .tabset-fade .tabset-pills}
 
 ```{r {{{selected_q_code}}}_input}
 input <- list(selected_q = "{{{selected_q}}}")
@@ -9,20 +9,19 @@ select_df <-
 any_response <- nrow(select_df) > 0
 ```
 
-
 ### {{{subsection_title}}} Overall
 
 ```{r {{{selected_q_code}}}_plot_overall, eval=any_response}
 select_df %>%
   ggplot(aes(x = response)) +
   geom_bar() +
-  scale_x_discrete(guide = guide_axis(n.dodge = 2))
+  scale_x_discrete(guide = guide_axis(n.dodge = 2), drop = FALSE)
 
-select_df %>% 
-  count(response, name = "number") %>%
-  mutate(percent = number / sum(number)) %>% 
+select_df %>%
+  count_prop_complete() %>%
+  rename(number = count, percent = prop) %>% 
   gt::gt() %>% 
-    fmt_percent(percent, decimals = 1)
+  fmt_percent(percent, decimals = 1)
 
 ex <- select_df %>% 
   summarize(nr = sum(response == response[1]), response = response[1], n = n())
@@ -35,9 +34,7 @@ This represents a total of `r ex$n` responses. Of these `r ex$nr` responses were
 
 ```{r {{{selected_q_code}}}_plot_gender, eval=any_response}
 gdf <- select_df %>%
-  group_by(gender) %>%
-  count(response, name = "count") %>%
-  mutate(prop = count / sum(count)) 
+  count_prop_complete(gender)
 
 gdf %>%
   ggplot(aes(x = response, fill = gender)) %>%
@@ -65,9 +62,7 @@ Of these `r ex$n`, `r ex$count` (`r scales::percent(ex$prop)`) responded  with `
 
 ```{r {{{selected_q_code}}}_plot_race, eval=any_response}
 rdf <- select_df %>%
-  group_by(race) %>%
-  count(response, name = "count") %>%
-  mutate(prop = count / sum(count))
+  count_prop_complete(race)
 
 rdf %>%
   ggplot(aes(x = response, fill = race)) %>%
@@ -97,16 +92,14 @@ Of these `r ex$n`, `r ex$count` (`r scales::percent(ex$prop)`) responded  with `
 
 ```{r {{{selected_q_code}}}_plot_international, eval=any_response}
 idf <- select_df %>%
-  group_by(international) %>%
-  count(response, name = "count") %>%
-  mutate(prop = count / sum(count))
+  count_prop_complete(international)
 
 idf %>%
   ggplot(aes(x = response, fill = international)) %>%
   stack_freq_prop(title = input$selected_agr_q)
 
 
-idf %>% 
+idf %>%
   transmute(
     international,
     response,
@@ -129,10 +122,7 @@ Of these `r ex$n`, `r ex$count` (`r scales::percent(ex$prop)`) responded  with `
 
 ```{r {{{selected_q_code}}}_plot_first_gen, eval=any_response}
 fdf <- select_df %>%
-  group_by(first_gen) %>%
-  count(response, name = "count") %>%
-  mutate(prop = count / sum(count))
-
+  count_prop_complete(first_gen)
 fdf %>%
   ggplot(aes(x = response, fill = first_gen)) %>%
   stack_freq_prop(title = input$selected_agr_q)

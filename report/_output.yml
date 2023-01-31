@@ -3,11 +3,14 @@ bookdown::bs4_book:
   theme:
     primary: "#096B72"
   repo: https://github.com/rstudio/bookdown-demo
-bookdown::pdf_book:
-  includes:
-    in_header: preamble.tex
-  latex_engine: xelatex
-  citation_package: natbib
-  keep_tex: yes
-bookdown::word_document2:
-  toc: true
+# bookdown::pdf_book:
+#   includes:
+#     in_header: preamble.tex
+#   latex_engine: xelatex
+#   citation_package: natbib
+#   keep_tex: yes
+# bookdown::word_document2:
+#   toc: true
+# rmarkdown::html_document:
+#   theme: flatly
+#   highlight: tango

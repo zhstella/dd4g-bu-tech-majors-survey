@@ -18,6 +18,7 @@ simple_race_table <- function(ddf, race_df) {
 simplify_race_var <- function(ddf, race_df){
   ddf %>%
     mutate(
+      race_full = race,
       race = ifelse(is.na(race), "NA", race),
       race = ifelse(str_detect(race, ","), "2 or more", race),
       race = race %>% fct_lump_min(20) %>% fct_infreq()
