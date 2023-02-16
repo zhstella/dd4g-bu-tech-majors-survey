@@ -1,8 +1,5 @@
 
-# Load in course questions
-
-devtools::load_all()
-
+source(here::here("R/source_all.R"))
 # set to -1 to make the whole book
 max_q <- 1
 

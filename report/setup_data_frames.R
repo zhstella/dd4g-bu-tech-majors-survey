@@ -1,7 +1,7 @@
 
 library(tidyverse)
 library(gt)
-devtools::load_all()
+source(here::here("R/source_all.R"))
 
 ddf_s <- ddf %>%
   mutate(
