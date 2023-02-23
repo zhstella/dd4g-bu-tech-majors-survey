@@ -1,7 +1,6 @@
 library(shiny)
 library(gt)
 
-source(here::here("R/source_all.R"))
 
 app <- function() {
 
@@ -13,9 +12,20 @@ app <- function() {
         sidebarLayout(
           sidebarPanel(
             selectInput(
-              "course",
-              label = "Select courese(s)",
-              choices = unique(course_df$course),
+              "qtype",
+              label = "Select question type",
+              choices = c("agreement_q", "course_satisfaction_q", "adjectives_q"),
+              multiple = FALSE
+            ), selectInput(
+              "question",
+              label = "Select question",
+              choices = NULL,
+              multiple = FALSE
+            ),
+            selectInput(
+              "variable",
+              label = "Select variable",
+              choices = c(unique(gender_df$gender), unique(race_df$race_str)),
               multiple = TRUE
             )
           ),
@@ -29,18 +39,45 @@ app <- function() {
     )
   )
 
-  server <- function(input, output) {
+  server <- function(input, output, session) {
+    observe({
+      if(input$qtype == "agreement_q")
+        updateSelectInput(session, "question",
+                          choices = unique(agreement_q$question_id),
+        )
+    })
+    observe({
+      if(input$qtype == "course_satisfaction_q")
+        updateSelectInput(session, "question",
+                          choices = unique(course_df$course),
+        )
+    })
+    observe({
+      if(input$qtype == "adjectives_q")
+        updateSelectInput(session, "question",
+                          choices = unique(adjectives_q$question_id),
+        )
+    })
+
     output$freq_plot <- renderPlot(
       {
-        if (length(input$course) > 0) {
+        if (input$qtype == "course_satisfaction_q") {
           g <- course_df %>%
-            filter(course %in% input$course) %>%
+            filter(course %in% input$question) %>%
             group_by(course) %>%
             count(response, name = "count", .drop = FALSE) %>%
             mutate(prop = count / sum(count)) %>%
             ggplot(aes(x = response, fill = course, group = course))
           title <- "Responses for selected course(s)"
-        } else {
+        } else if (input$qtype == "adjectives_q"){
+          g <- adj_ldf %>%
+            filter(input$question) %>%
+            group_by(input$question) %>%
+            count(response, name = "count", .drop = FALSE) %>%
+            mutate(prop = count / sum(count)) %>%
+            ggplot(aes(x = response, fill = input$question, group = course))
+          title <- "Responses for selected course(s)"
+        }else{
           g <- course_df %>%
             count(response, name = "count", .drop = FALSE) %>%
             mutate(prop = count / sum(count)) %>%
@@ -56,4 +93,3 @@ app <- function() {
 
   shinyApp(ui = ui, server = server)
 }
-
