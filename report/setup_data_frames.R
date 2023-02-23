@@ -1,6 +1,7 @@
 
 library(tidyverse)
-devtools::load_all()
+library(gt)
+source(here::here("R/source_all.R"))
 
 ddf_s <- ddf %>%
   mutate(
@@ -41,11 +42,11 @@ course_ldf <- ddf_s %>%
   left_join(course_satisfaction_q, by = "question_id") %>%
   mutate(
     response =
-     factor(
-       response,
-       levels = satisfaction_level,
-       ordered = TRUE
-    )
+      factor(
+        response,
+        levels = satisfaction_level,
+        ordered = TRUE
+      )
   )
 
 # Get "agreement" questions
