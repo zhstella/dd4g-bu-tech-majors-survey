@@ -14,7 +14,7 @@ app <- function() {
             selectInput(
               "qtype",
               label = "Select question type",
-              choices = c("agreement_q", "course_satisfaction_q", "adjectives_q"),
+              choices = c("agreement_q", "course_satisfaction_q", "adjectives_q", "department_q"),
               multiple = FALSE
             ), selectInput(
               "question",
@@ -58,6 +58,12 @@ app <- function() {
                           choices = unique(adjectives_q$question_text),
         )
     })
+    observe({
+      if(input$qtype == "department_q")
+        updateSelectInput(session, "question",
+                          choices = unique(dep_tbl$selected_q),
+        )
+    })
 
     output$freq_plot <- renderPlot(
       {
@@ -86,6 +92,17 @@ app <- function() {
           input <- list(selected_q = input$question)
           select_df <-
             agreement_ldf %>%
+            filter(str_detect(question_text, input$selected_q))
+          any_response <- nrow(select_df) > 0
+
+          select_df %>%
+            ggplot(aes(x = response)) +
+            geom_bar() +
+            scale_x_discrete(guide = guide_axis(n.dodge = 2), drop = FALSE)
+        }else if (input$qtype == "department_q"){
+          input <- list(selected_q = input$question)
+          select_df <-
+            course_ldf %>%
             filter(str_detect(question_text, input$selected_q))
           any_response <- nrow(select_df) > 0
 
