@@ -43,7 +43,7 @@ app <- function() {
     observe({
       if(input$qtype == "agreement_q")
         updateSelectInput(session, "question",
-                          choices = unique(agreement_q$question_id),
+                          choices = unique(agreement_q$question_text),
         )
     })
     observe({
@@ -55,7 +55,7 @@ app <- function() {
     observe({
       if(input$qtype == "adjectives_q")
         updateSelectInput(session, "question",
-                          choices = unique(adjectives_q$question_id),
+                          choices = unique(adjectives_q$question_text),
         )
     })
 
@@ -69,22 +69,32 @@ app <- function() {
             mutate(prop = count / sum(count)) %>%
             ggplot(aes(x = response, fill = course, group = course))
           title <- "Responses for selected course(s)"
+          stack_freq_prop(g, title = title)
         } else if (input$qtype == "adjectives_q"){
-          g <- adj_ldf %>%
-            filter(input$question) %>%
-            group_by(input$question) %>%
-            count(response, name = "count", .drop = FALSE) %>%
-            mutate(prop = count / sum(count)) %>%
-            ggplot(aes(x = response, fill = input$question, group = course))
-          title <- "Responses for selected course(s)"
-        }else{
-          g <- course_df %>%
-            count(response, name = "count", .drop = FALSE) %>%
-            mutate(prop = count / sum(count)) %>%
-            ggplot(aes(x = response, group = factor(1)))
-          title <- "All responses"
+          input <- list(selected_q = input$question)
+          select_df <-
+            adj_ldf %>%
+            filter(str_detect(question_text, input$selected_q))
+          any_response <- nrow(select_df) > 0
+
+            select_df %>%
+            ggplot(aes(x = response)) +
+            geom_bar() +
+            scale_x_discrete(guide = guide_axis(n.dodge = 2), drop = FALSE)
+
+        }else if (input$qtype == "agreement_q"){
+          input <- list(selected_q = input$question)
+          select_df <-
+            agreement_ldf %>%
+            filter(str_detect(question_text, input$selected_q))
+          any_response <- nrow(select_df) > 0
+
+          select_df %>%
+            ggplot(aes(x = response)) +
+            geom_bar() +
+            scale_x_discrete(guide = guide_axis(n.dodge = 2), drop = FALSE)
         }
-        stack_freq_prop(g, title = title)
+
       },
       height = 600
     )
