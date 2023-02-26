@@ -25,7 +25,7 @@ app <- function() {
             selectInput(
               "variable",
               label = "Select variable",
-              choices = c(unique(gender_df$gender), unique(race_df$race_str)),
+              choices = c("Asian", "Black", "Hispanic/Latino/a", "Middle Eastern", "Native American/Alaskan Native", "Native Hawaiian/Other Pacific Islander", "White", "Female", "Male", "Non-Binary"),
               multiple = TRUE
             )
           ),
