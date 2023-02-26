@@ -50,20 +50,24 @@ app <- function() {
       if(input$qtype == "course_satisfaction_q")
         updateSelectInput(session, "question",
                           choices = unique(course_df$course),
+                          label = "Select course",
         )
     })
     observe({
       if(input$qtype == "adjectives_q")
         updateSelectInput(session, "question",
                           choices = unique(adjectives_q$question_text),
+                          label = "Select adjectives to compare",
         )
     })
     observe({
       if(input$qtype == "department_q")
         updateSelectInput(session, "question",
                           choices = unique(dep_tbl$selected_q),
+                          label = "Select department"
         )
     })
+
 
     output$freq_plot <- renderPlot(
       {
