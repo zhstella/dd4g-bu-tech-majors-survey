@@ -25,8 +25,8 @@ app <- function() {
             selectInput(
               "variable",
               label = "Select variable",
-              choices = c("Asian", "Black", "Hispanic/Latino/a", "Middle Eastern", "Native American/Alaskan Native", "Native Hawaiian/Other Pacific Islander", "White", "Female", "Male", "Non-Binary"),
-              multiple = TRUE
+              choices = c("gender", "race"),
+              multiple = FALSE
             )
           ),
           mainPanel(
@@ -71,13 +71,14 @@ app <- function() {
 
     output$freq_plot <- renderPlot(
       {
+        var <- input$variable
         if (input$qtype == "course_satisfaction_q") {
           g <- course_df %>%
             filter(course %in% input$question) %>%
             group_by(course) %>%
             count(response, name = "count", .drop = FALSE) %>%
             mutate(prop = count / sum(count)) %>%
-            ggplot(aes(x = response, fill = course, group = course))
+            ggplot(aes(x = response, group = course))
           title <- "Responses for selected course(s)"
           stack_freq_prop(g, title = title)
         } else if (input$qtype == "adjectives_q"){
@@ -88,7 +89,7 @@ app <- function() {
           any_response <- nrow(select_df) > 0
 
             select_df %>%
-            ggplot(aes(x = response)) +
+            ggplot(aes(x = response, fill = .data[[var]])) +
             geom_bar() +
             scale_x_discrete(guide = guide_axis(n.dodge = 2), drop = FALSE)
 
@@ -100,7 +101,7 @@ app <- function() {
           any_response <- nrow(select_df) > 0
 
           select_df %>%
-            ggplot(aes(x = response)) +
+            ggplot(aes(x = response, fill = .data[[var]])) +
             geom_bar() +
             scale_x_discrete(guide = guide_axis(n.dodge = 2), drop = FALSE)
         }else if (input$qtype == "department_q"){
@@ -124,3 +125,5 @@ app <- function() {
 
   shinyApp(ui = ui, server = server)
 }
+
+shiny::runApp(app())
