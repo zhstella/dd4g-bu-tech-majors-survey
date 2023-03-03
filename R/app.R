@@ -112,7 +112,7 @@ app <- function() {
           any_response <- nrow(select_df) > 0
 
           select_df %>%
-            ggplot(aes(x = response)) +
+            ggplot(aes(x = response, fill = .data[[var]])) +
             geom_bar() +
             scale_x_discrete(guide = guide_axis(n.dodge = 2), drop = FALSE)
         }
