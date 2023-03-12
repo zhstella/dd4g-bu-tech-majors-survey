@@ -30,7 +30,7 @@ app <- function() {
             selectInput(
               "variable",
               label = "Select variable",
-              choices = c("gender", "race"),
+              choices = c("gender", "race", "none"),
               multiple = FALSE
             )
           ),
@@ -96,14 +96,21 @@ app <- function() {
           filter(str_detect(question_text, input$selected_q))
         any_response <- nrow(select_df) > 0
 
+        if (var == "none"){
+          rdf <- select_df %>%
+            count_prop_complete()
 
-        rdf <- select_df %>%
-          count_prop_complete(.data[[var]])
+          rdf %>%
+            ggplot(aes(x = response)) %>%
+            stack_freq_prop(title = input$question)
+        }else{
+          rdf <- select_df %>%
+            count_prop_complete(.data[[var]])
 
-
-        rdf %>%
-          ggplot(aes(x = response, fill = .data[[var]])) %>%
-          stack_freq_prop(title = input$question)
+          rdf %>%
+            ggplot(aes(x = response, fill = .data[[var]])) %>%
+            stack_freq_prop(title = input$question)
+        }
       },
       height = 600
     )
