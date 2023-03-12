@@ -98,11 +98,12 @@ app <- function() {
 
 
         rdf <- select_df %>%
-          count_prop_complete(.data[[var]])
+          count_prop_complete(.data[[var]]) %>%
+          geom_text(aes(label = ..count..), stat = "count", vjust = 1.5, colour = "white")
 
         rdf %>%
           ggplot(aes(x = response, fill = .data[[var]])) %>%
-          stack_freq_prop(title = input$selected_agr_q)
+          stack_freq_prop(title = input$question)
       },
       height = 600
     )
