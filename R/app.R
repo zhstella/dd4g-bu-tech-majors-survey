@@ -99,7 +99,7 @@ app <- function() {
 
         rdf <- select_df %>%
           count_prop_complete(.data[[var]]) %>%
-          geom_text(aes(label = ..count..), stat = "count", vjust = 1.5, colour = "white")
+
 
         rdf %>%
           ggplot(aes(x = response, fill = .data[[var]])) %>%
