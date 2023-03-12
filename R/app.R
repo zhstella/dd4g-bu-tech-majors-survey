@@ -49,7 +49,7 @@ app <- function() {
     observe({
       if(input$qtype == "course_satisfaction_q")
         updateSelectInput(session, "question",
-                          choices = unique(course_df$course),
+                          choices = unique(course_ldf$question_text),
                           label = "Select course",
         )
     })
@@ -73,14 +73,16 @@ app <- function() {
       {
         var <- input$variable
         if (input$qtype == "course_satisfaction_q") {
-          g <- course_df %>%
-            filter(course %in% input$question) %>%
-            group_by(course) %>%
-            count(response, name = "count", .drop = FALSE) %>%
-            mutate(prop = count / sum(count)) %>%
-            ggplot(aes(x = response, group = course))
-          title <- "Responses for selected course(s)"
-          stack_freq_prop(g, title = title)
+          input <- list(selected_q = input$question)
+          select_df <-
+            course_ldf %>%
+            filter(str_detect(question_text, input$selected_q))
+          any_response <- nrow(select_df) > 0
+
+          select_df %>%
+            ggplot(aes(x = response, fill = .data[[var]])) +
+            geom_bar() +
+            scale_x_discrete(guide = guide_axis(n.dodge = 2), drop = FALSE)
         } else if (input$qtype == "adjectives_q"){
           input <- list(selected_q = input$question)
           select_df <-
@@ -88,7 +90,7 @@ app <- function() {
             filter(str_detect(question_text, input$selected_q))
           any_response <- nrow(select_df) > 0
 
-            select_df %>%
+          select_df %>%
             ggplot(aes(x = response, fill = .data[[var]])) +
             geom_bar() +
             scale_x_discrete(guide = guide_axis(n.dodge = 2), drop = FALSE)
