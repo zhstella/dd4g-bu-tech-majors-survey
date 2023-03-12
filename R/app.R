@@ -5,16 +5,21 @@ library(gt)
 app <- function() {
 
   ui <- fluidPage(
-    titlePanel("DEI Student Survey"),
-    tabsetPanel(
+    titlePanel("DEI in Tech Climate Survey Interactive Report"),
+    tabsetPanel(tabPanel(
+      "Welcome"
+    ),
+    tabPanel(
+      "General Report"
+    ),
       tabPanel(
-        "Course satisfication",
+        "Build-a-Graph",
         sidebarLayout(
           sidebarPanel(
             selectInput(
               "qtype",
               label = "Select question type",
-              choices = c("agreement_q", "course_satisfaction_q", "adjectives_q", "department_q"),
+              choices = c("Agreement", "Adjectives", "Course Satisfaction", "Department Satisfaction"),
               multiple = FALSE
             ), selectInput(
               "question",
@@ -36,32 +41,35 @@ app <- function() {
         )
       )
       # compare_groups_ui("compare_groups")
-    )
+    ),
+    hr(),
+    print("~~~my disclaimer~~~~")
   )
 
   server <- function(input, output, session) {
     observe({
-      if(input$qtype == "agreement_q")
+      if(input$qtype == "Agreement")
         updateSelectInput(session, "question",
                           choices = unique(agreement_q$question_text),
+                          label = "Select agreement statement"
         )
     })
     observe({
-      if(input$qtype == "course_satisfaction_q")
+      if(input$qtype == "Course Satisfaction")
         updateSelectInput(session, "question",
                           choices = unique(course_ldf$question_text),
                           label = "Select course",
         )
     })
     observe({
-      if(input$qtype == "adjectives_q")
+      if(input$qtype == "Adjectives")
         updateSelectInput(session, "question",
                           choices = unique(adjectives_q$question_text),
                           label = "Select adjectives to compare",
         )
     })
     observe({
-      if(input$qtype == "department_q")
+      if(input$qtype == "Department Satisfaction")
         updateSelectInput(session, "question",
                           choices = unique(dep_tbl$selected_q),
                           label = "Select department"
@@ -72,7 +80,8 @@ app <- function() {
     output$freq_plot <- renderPlot(
       {
         var <- input$variable
-        if (input$qtype == "course_satisfaction_q") {
+
+        if (input$qtype == "Course Satisfaction") {
           input <- list(selected_q = input$question)
           select_df <-
             course_ldf %>%
@@ -83,7 +92,7 @@ app <- function() {
             ggplot(aes(x = response, fill = .data[[var]])) +
             geom_bar() +
             scale_x_discrete(guide = guide_axis(n.dodge = 2), drop = FALSE)
-        } else if (input$qtype == "adjectives_q"){
+        } else if (input$qtype == "Adjectives"){
           input <- list(selected_q = input$question)
           select_df <-
             adj_ldf %>%
@@ -95,7 +104,7 @@ app <- function() {
             geom_bar() +
             scale_x_discrete(guide = guide_axis(n.dodge = 2), drop = FALSE)
 
-        }else if (input$qtype == "agreement_q"){
+        }else if (input$qtype == "Agreement"){
           input <- list(selected_q = input$question)
           select_df <-
             agreement_ldf %>%
@@ -106,7 +115,7 @@ app <- function() {
             ggplot(aes(x = response, fill = .data[[var]])) +
             geom_bar() +
             scale_x_discrete(guide = guide_axis(n.dodge = 2), drop = FALSE)
-        }else if (input$qtype == "department_q"){
+        }else if (input$qtype == "Department Satisfaction"){
           input <- list(selected_q = input$question)
           select_df <-
             course_ldf %>%
