@@ -98,7 +98,7 @@ app <- function() {
 
 
         rdf <- select_df %>%
-          count_prop_complete(.data[[var]]) %>%
+          count_prop_complete(.data[[var]])
 
 
         rdf %>%
