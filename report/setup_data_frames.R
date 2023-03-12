@@ -79,7 +79,7 @@ agreement_q <- original_question_df %>%
   filter(
     str_detect(question_text, "agreement")
   ) %>%
-  mutate(question_text = str_c(question_id, " ", str_extract(question_text, "(?<=: - ).*")))
+  mutate(question_text = str_c(" ", str_extract(question_text, "(?<=: - ).*")))
 
 agreement_ldf <- ddf_s %>%
   pivot_longer(
