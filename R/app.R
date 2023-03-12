@@ -83,7 +83,6 @@ app <- function() {
 
         if (input$qtype == "Course Satisfaction") {
           cdf = course_ldf #cdf = current dataframe
-
         } else if (input$qtype == "Adjectives"){
           cdf = adj_ldf
         }else if (input$qtype == "Agreement"){
@@ -97,10 +96,13 @@ app <- function() {
           filter(str_detect(question_text, input$selected_q))
         any_response <- nrow(select_df) > 0
 
-        select_df %>%
-          ggplot(aes(x = response, fill = .data[[var]])) +
-          geom_bar() +
-          scale_x_discrete(guide = guide_axis(n.dodge = 2), drop = FALSE)
+
+        rdf <- select_df %>%
+          count_prop_complete(.data[[var]])
+
+        rdf %>%
+          ggplot(aes(x = response, fill = .data[[var]])) %>%
+          stack_freq_prop(title = input$selected_agr_q)
       },
       height = 600
     )
