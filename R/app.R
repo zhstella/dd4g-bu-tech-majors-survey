@@ -82,52 +82,25 @@ app <- function() {
         var <- input$variable
 
         if (input$qtype == "Course Satisfaction") {
-          input <- list(selected_q = input$question)
-          select_df <-
-            course_ldf %>%
-            filter(str_detect(question_text, input$selected_q))
-          any_response <- nrow(select_df) > 0
+          cdf = course_ldf #cdf = current dataframe
 
-          select_df %>%
-            ggplot(aes(x = response, fill = .data[[var]])) +
-            geom_bar() +
-            scale_x_discrete(guide = guide_axis(n.dodge = 2), drop = FALSE)
         } else if (input$qtype == "Adjectives"){
-          input <- list(selected_q = input$question)
-          select_df <-
-            adj_ldf %>%
-            filter(str_detect(question_text, input$selected_q))
-          any_response <- nrow(select_df) > 0
-
-          select_df %>%
-            ggplot(aes(x = response, fill = .data[[var]])) +
-            geom_bar() +
-            scale_x_discrete(guide = guide_axis(n.dodge = 2), drop = FALSE)
-
+          cdf = adj_ldf
         }else if (input$qtype == "Agreement"){
-          input <- list(selected_q = input$question)
-          select_df <-
-            agreement_ldf %>%
-            filter(str_detect(question_text, input$selected_q))
-          any_response <- nrow(select_df) > 0
-
-          select_df %>%
-            ggplot(aes(x = response, fill = .data[[var]])) +
-            geom_bar() +
-            scale_x_discrete(guide = guide_axis(n.dodge = 2), drop = FALSE)
+          cdf = agreement_ldf
         }else if (input$qtype == "Department Satisfaction"){
-          input <- list(selected_q = input$question)
-          select_df <-
-            course_ldf %>%
-            filter(str_detect(question_text, input$selected_q))
-          any_response <- nrow(select_df) > 0
-
-          select_df %>%
-            ggplot(aes(x = response, fill = .data[[var]])) +
-            geom_bar() +
-            scale_x_discrete(guide = guide_axis(n.dodge = 2), drop = FALSE)
+          cdf = course_ldf
         }
+        input <- list(selected_q = input$question)
+        select_df <-
+          cdf %>%
+          filter(str_detect(question_text, input$selected_q))
+        any_response <- nrow(select_df) > 0
 
+        select_df %>%
+          ggplot(aes(x = response, fill = .data[[var]])) +
+          geom_bar() +
+          scale_x_discrete(guide = guide_axis(n.dodge = 2), drop = FALSE)
       },
       height = 600
     )
