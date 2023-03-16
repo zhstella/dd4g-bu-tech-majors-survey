@@ -30,7 +30,7 @@ app <- function() {
             selectInput(
               "variable",
               label = "Select variable",
-              choices = c("gender", "race", "none"),
+              choices = c("gender", "race", "first_gen", "international", "none"),
               multiple = FALSE
             )
           ),
