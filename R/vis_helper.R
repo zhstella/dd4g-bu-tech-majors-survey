@@ -7,6 +7,7 @@ stack_freq_prop <- function(g, title = "Frequency chart") {
     scale_x_discrete("", guide = guide_axis(n.dodge = 2), drop = FALSE) +
     scale_fill_discrete(guide = "none", drop = FALSE) +
     ggtitle(title, subtitle = "Top: absolute counts. Bottom: relative proportions.")
+    + geom_text(aes(label = count), vjust = 1.5, colour = "white")
   g2 <- g +
     geom_col(
       aes(y = prop),
