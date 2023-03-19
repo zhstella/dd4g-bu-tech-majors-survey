@@ -41,10 +41,10 @@ app <- function() {
         )
       )
       # compare_groups_ui("compare_groups")
+
     ),
     hr(),
-    print("~~~my disclaimer~~~~")
-  )
+    imageOutput("photo"))
 
   server <- function(input, output, session) {
     observe({
@@ -76,6 +76,14 @@ app <- function() {
         )
     })
 
+    output$photo <- renderImage({
+      list(
+        src = "../techcollectivelogo.png",
+        contentType = "image/png",
+        width = 200,
+        height = 50
+      )
+    }, deleteFile = FALSE)
 
     output$freq_plot <- renderPlot(
       {
