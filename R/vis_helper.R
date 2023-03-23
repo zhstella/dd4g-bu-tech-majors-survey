@@ -8,7 +8,7 @@ stack_freq_prop <- function(g, title = "Frequency chart") {
     ) +
     scale_x_discrete("", guide = guide_axis(n.dodge = 2), drop = FALSE) +
     scale_fill_discrete(guide = "none", drop = FALSE) +
-    geom_text(aes(y = count, label = as.character(count)), vjust = "inward", colour = "black", position = position_dodge(width = .9)) +
+    geom_label(aes(y = count, label = as.character(count)), vjust = "inward", colour = "black", fontface = "bold", fill = "white", position = position_dodge(width = .9)) +
     ggtitle(title, subtitle = "Top: absolute counts. Bottom: relative proportions.")
   g2 <- g +
     geom_col(
@@ -18,7 +18,7 @@ stack_freq_prop <- function(g, title = "Frequency chart") {
     scale_x_discrete(guide = guide_axis(n.dodge = 2), drop = FALSE) +
     scale_y_continuous(labels = scales::percent) +
     scale_fill_discrete("", drop = FALSE) +
-    geom_text(aes(y = round(prop, digits = 2), label = as.character(percent(round(prop, digits = 2)))), vjust = -.1, colour = "black", position = position_dodge(width = .9)) +
+    geom_label(aes(y = round(prop, digits = 2), label = as.character(percent(round(prop, digits = 2)))), vjust = "inward", colour = "black", fill = "white", fontface = "bold", position = position_dodge(width = .9)) +
     theme(legend.position = "bottom")
   ggpubr::ggarrange(g1, g2, nrow = 2, heights = c(1, 2), align = "v")
 }
