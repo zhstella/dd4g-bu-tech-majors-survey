@@ -1,6 +1,6 @@
 library(plotly)
 
-stack_freq_prop <- function(g, title = "Frequency chart") {
+stack_freq_prop <- function(g, title) {
   g1 <- g +
     geom_col(
       aes(y = count),

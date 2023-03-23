@@ -50,7 +50,7 @@ app <- function() {
             selectInput(
               "qtype",
               label = "Select question type",
-              choices = c("Agreement", "Adjectives", "Course Satisfaction", "Department Satisfaction"),
+              choices = c("Agreement", "Adjectives", "Course Satisfaction"),
               multiple = FALSE
             ), selectInput(
               "question",
@@ -122,13 +122,15 @@ app <- function() {
 
         if (input$qtype == "Course Satisfaction") {
           cdf = course_ldf #cdf = current dataframe
+          graphTitle = "Survey Prompt: How satisfied are you in regards to the instructional support (ex. support from professors) you've received in the following course?"
         } else if (input$qtype == "Adjectives"){
           cdf = adj_ldf
+          graphTitle = "Survey Prompt: Please select one option between each set of adjectives that best represents how you would rate your major department based on what you have seen and/or your own personal experience."
         }else if (input$qtype == "Agreement"){
           cdf = agreement_ldf
-        }else if (input$qtype == "Department Satisfaction"){
-          cdf = course_ldf
+          graphTitle = "Survey Prompt: Please indicate your level of agreement with the following statement."
         }
+
         input <- list(selected_q = input$question)
         select_df <-
           cdf %>%
@@ -148,7 +150,7 @@ app <- function() {
 
           rdf %>%
             ggplot(aes(x = response, fill = .data[[var]], group = .data[[var]])) %>%
-            stack_freq_prop(title = input$question)
+            stack_freq_prop(title = graphTitle)
         }
       },
       height = 600
@@ -165,7 +167,7 @@ app <- function() {
 
         rdf %>%
           ggplot(aes(x = response)) %>%
-          stack_freq_prop()
+          stack_freq_prop(title = "Prompt: Please indicate all of the racial and/or ethnic groups you most identify with.")
 
 
 
