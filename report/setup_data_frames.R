@@ -120,3 +120,17 @@ dis_ldf <- ddf_s %>%
     values_drop_na = TRUE
   ) %>%
   left_join(dis_q, by = "question_id")
+
+race_q <- original_question_df %>%
+  filter(question_id == "Q7")
+
+race_ldf <- ddf_s %>%
+  pivot_longer(
+    cols = "race",
+    names_to = "question_id",
+    values_to = "response",
+    values_drop_na = TRUE
+  ) %>%
+  left_join(race_q, by = "question_id")
+
+

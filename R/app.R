@@ -157,8 +157,7 @@ app <- function() {
       {
         input <- list(selected_q = "Have you ever experienced discrimination or disrespectful/inappropriate behavior in your major department?")
         select_df <-
-          dis_ldf %>%
-          filter(str_detect(question_text, input$selected_q))
+          race_ldf
         any_response <- nrow(select_df) > 0
 
         select_df %>%
