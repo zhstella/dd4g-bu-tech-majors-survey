@@ -1,6 +1,9 @@
+library(plotly)
+
 stack_freq_prop <- function(g, title = "Frequency chart") {
   g1 <- g +
     geom_col(
+      #aes(y = count, text = paste("Count: ", count))
       aes(y = count),
       position = position_dodge2(preserve = "single")
     ) +
@@ -8,6 +11,7 @@ stack_freq_prop <- function(g, title = "Frequency chart") {
     scale_fill_discrete(guide = "none", drop = FALSE) +
     geom_text(aes(y = count, label = as.character(count)), vjust = 1.4, colour = "white") +
     ggtitle(title, subtitle = "Top: absolute counts. Bottom: relative proportions.")
+    #ggplotly(g1, tooltip = "text")
   g2 <- g +
     geom_col(
       aes(y = prop),

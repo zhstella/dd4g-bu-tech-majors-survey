@@ -1,16 +1,46 @@
 library(shiny)
 library(gt)
+library(plotly)
+library(ggplot2)
 
 
 app <- function() {
 
   ui <- fluidPage(
     titlePanel("DEI in Tech Climate Survey Interactive Report"),
-    tabsetPanel(tabPanel(
-      "Welcome"
+    tabsetPanel(
+    tabPanel(
+      "Welcome",
+      mainPanel(
+        h1("Welcome to the 2022 DEI in Tech Climate Survey Report"),
+        p("This report is brought to you by the DEI Tech Collective.
+        The Collective is an opportunity for BU tech and computing groups to unite around efforts to educate each other
+        and address inequity issues within the community."),
+        br(),
+        p("To learn more about our initiative, visit the",
+          a("DEI Tech Collective website.",
+            href = "https://sites.bu.edu/dei-in-tech/")),
+        hr(),
+        h3("What is the DEI in Tech Climate Survey?"),
+        p("Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nunc vitae metus eget lectus posuere facilisis. Ut tempor tempus consectetur. Fusce eu semper ligula. Class aptent taciti sociosqu ad litora torquent per conubia nostra, per inceptos himenaeos. Aliquam tempor, libero non mollis varius, ex ex imperdiet arcu, vitae porta felis diam id sapien. Sed facilisis est sed cursus tincidunt. Suspendisse hendrerit velit sed odio finibus varius."),
+        h3("How was the survey created?"),
+        p("Nam a risus eget est bibendum luctus ut at sem. Donec nec quam hendrerit, eleifend purus eget, posuere quam. Cras non ex vitae arcu pretium posuere ut tempor massa. Nullam vitae pellentesque nisl, eu hendrerit nisl. Interdum et malesuada fames ac ante ipsum primis in faucibus."),
+        h3("What can I do on this site?"),
+        p("Donec est arcu, tristique a fringilla eu, mollis a diam. Duis fermentum aliquam quam vel finibus. Fusce vitae nibh nisl. Aenean ac purus est. Aenean in tincidunt nulla. Fusce maximus cursus enim, id blandit massa rhoncus vel. Duis ullamcorper in mi ut volutpat. Quisque sit amet luctus velit. Sed maximus tortor ipsum.")
+      )
     ),
     tabPanel(
-      "General Report"
+      "General Report",
+      mainPanel(
+        h1("General Report and Summaries"),
+        p("Below is a general overview of the demographics of students who completed the survey and summaries detailing the common trends seen throughout the survey."),
+        hr(),
+        h3("Respondent Demographics"),
+        p("Aliquam tempor, libero non mollis varius, ex ex imperdiet arcu, vitae porta felis diam id sapien. Sed facilisis est sed cursus tincidunt. Suspendisse hendrerit velit sed odio finibus varius."),
+        plotOutput("demo_plot"),
+        h3("Common Trends"),
+        p("Nam a risus eget est bibendum luctus ut at sem. Donec nec quam hendrerit, eleifend purus eget, posuere quam. Cras non ex vitae arcu pretium posuere ut tempor massa. Nullam vitae pellentesque nisl, eu hendrerit nisl. Interdum et malesuada fames ac ante ipsum primis in faucibus.")
+      )
     ),
       tabPanel(
         "Build-a-Graph",
@@ -35,7 +65,7 @@ app <- function() {
             )
           ),
           mainPanel(
-            headerPanel("Course satisfication response distribution"),
+            headerPanel("Survey response distribution"),
             plotOutput("freq_plot")
           )
         )
@@ -121,6 +151,24 @@ app <- function() {
         }
       },
       height = 600
+    )
+
+    output$demo_plot <- renderPlot(
+      {
+        input <- list(selected_q = "Have you ever experienced discrimination or disrespectful/inappropriate behavior in your major department?")
+        select_df <-
+          dis_ldf %>%
+          filter(str_detect(question_text, input$selected_q))
+        any_response <- nrow(select_df) > 0
+
+        select_df %>%
+          ggplot(aes(x = response)) +
+          geom_bar() +
+          scale_x_discrete(guide = guide_axis(n.dodge = 2), drop = FALSE)
+
+
+        },
+      height = 400
     )
     # compare_group_server("compare_groups")
   }
