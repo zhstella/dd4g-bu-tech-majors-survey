@@ -3,7 +3,6 @@ library(plotly)
 stack_freq_prop <- function(g, title = "Frequency chart") {
   g1 <- g +
     geom_col(
-      #aes(y = count, text = paste("Count: ", count))
       aes(y = count),
       position = position_dodge2(preserve = "single")
     ) +
@@ -11,7 +10,6 @@ stack_freq_prop <- function(g, title = "Frequency chart") {
     scale_fill_discrete(guide = "none", drop = FALSE) +
     geom_text(aes(y = count, label = as.character(count)), vjust = -.1, colour = "black", position = position_dodge(width = .9)) +
     ggtitle(title, subtitle = "Top: absolute counts. Bottom: relative proportions.")
-    #ggplotly(g1, tooltip = "text")
   g2 <- g +
     geom_col(
       aes(y = prop),
@@ -20,6 +18,7 @@ stack_freq_prop <- function(g, title = "Frequency chart") {
     scale_x_discrete(guide = guide_axis(n.dodge = 2), drop = FALSE) +
     scale_y_continuous(labels = scales::percent) +
     scale_fill_discrete("", drop = FALSE) +
+    geom_text(aes(y = round(prop, digits = 2), label = as.character(percent(round(prop, digits = 2)))), vjust = -.1, colour = "black", position = position_dodge(width = .9)) +
     theme(legend.position = "bottom")
   ggpubr::ggarrange(g1, g2, nrow = 2, heights = c(1, 2), align = "v")
 }
