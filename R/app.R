@@ -37,7 +37,7 @@ app <- function() {
         hr(),
         h3("Respondent Demographics"),
         p("Aliquam tempor, libero non mollis varius, ex ex imperdiet arcu, vitae porta felis diam id sapien. Sed facilisis est sed cursus tincidunt. Suspendisse hendrerit velit sed odio finibus varius."),
-        plotOutput("demo_plot"),
+        plotOutput("demo_plot", height = "200"),
         h3("Common Trends"),
         p("Nam a risus eget est bibendum luctus ut at sem. Donec nec quam hendrerit, eleifend purus eget, posuere quam. Cras non ex vitae arcu pretium posuere ut tempor massa. Nullam vitae pellentesque nisl, eu hendrerit nisl. Interdum et malesuada fames ac ante ipsum primis in faucibus.")
       )
@@ -146,7 +146,7 @@ app <- function() {
             count_prop_complete(.data[[var]])
 
           rdf %>%
-            ggplot(aes(x = response, fill = .data[[var]])) %>%
+            ggplot(aes(x = response, fill = .data[[var]], group = .data[[var]])) %>%
             stack_freq_prop(title = input$question)
         }
       },
@@ -155,7 +155,6 @@ app <- function() {
 
     output$demo_plot <- renderPlot(
       {
-        input <- list(selected_q = "Have you ever experienced discrimination or disrespectful/inappropriate behavior in your major department?")
         select_df <-
           race_ldf
         any_response <- nrow(select_df) > 0
@@ -165,9 +164,8 @@ app <- function() {
           geom_bar() +
           scale_x_discrete(guide = guide_axis(n.dodge = 2), drop = FALSE)
 
+        }
 
-        },
-      height = 400
     )
     # compare_group_server("compare_groups")
   }

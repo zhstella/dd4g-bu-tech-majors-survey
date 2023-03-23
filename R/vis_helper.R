@@ -9,7 +9,7 @@ stack_freq_prop <- function(g, title = "Frequency chart") {
     ) +
     scale_x_discrete("", guide = guide_axis(n.dodge = 2), drop = FALSE) +
     scale_fill_discrete(guide = "none", drop = FALSE) +
-    geom_text(aes(y = count, label = as.character(count)), vjust = 1.4, colour = "white") +
+    geom_text(aes(y = count, label = as.character(count)), vjust = -.1, colour = "black", position = position_dodge(width = .9)) +
     ggtitle(title, subtitle = "Top: absolute counts. Bottom: relative proportions.")
     #ggplotly(g1, tooltip = "text")
   g2 <- g +
