@@ -7,6 +7,7 @@ library(ggplot2)
 app <- function() {
 
   ui <- fluidPage(
+    fluidRow(
     titlePanel("DEI in Tech Climate Survey Interactive Report"),
     tabsetPanel(
     tabPanel(
@@ -72,7 +73,7 @@ app <- function() {
       )
       # compare_groups_ui("compare_groups")
 
-    ),
+    )),
     hr(),
     imageOutput("photo"))
 
