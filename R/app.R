@@ -66,7 +66,6 @@ app <- function() {
             )
           ),
           mainPanel(
-            headerPanel("Survey response distribution"),
             plotOutput("freq_plot")
           )
         )
@@ -122,13 +121,14 @@ app <- function() {
 
         if (input$qtype == "Course Satisfaction") {
           cdf = course_ldf #cdf = current dataframe
-          graphTitle = "Survey Prompt: How satisfied are you in regards to the instructional support (ex. support from professors) you've received in the following course?"
+          graphTitle = paste("Survey Prompt: How satisfied are you in regards to the instructional support \n (ex. support from professors) you've received in", input$question, "?")
         } else if (input$qtype == "Adjectives"){
           cdf = adj_ldf
-          graphTitle = "Survey Prompt: Please select one option between each set of adjectives that best represents how you would rate your major department based on what you have seen and/or your own personal experience."
+          v <- strsplit(input$question, split = ":")
+          graphTitle = paste("Survey Prompt: Please select one option between the following set of adjectives that best represents \n how you would rate your major department based on what you have seen and/or your own \n personal experience: ", "1 = ", v[[1]], "and ", "5 = ", v[[1:2]])
         }else if (input$qtype == "Agreement"){
           cdf = agreement_ldf
-          graphTitle = "Survey Prompt: Please indicate your level of agreement with the following statement."
+          graphTitle = paste("Survey Prompt: Please indicate your level of agreement with the following statement: \n", input$question)
         }
 
         input <- list(selected_q = input$question)

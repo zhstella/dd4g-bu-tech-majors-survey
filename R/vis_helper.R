@@ -9,7 +9,8 @@ stack_freq_prop <- function(g, title) {
     scale_x_discrete("", guide = guide_axis(n.dodge = 2), drop = FALSE) +
     scale_fill_discrete(guide = "none", drop = FALSE) +
     geom_label(aes(y = count, label = as.character(count)), vjust = "inward", colour = "black", fontface = "bold", fill = "white", position = position_dodge(width = .9)) +
-    ggtitle(title, subtitle = "Top: absolute counts. Bottom: relative proportions.")
+    ggtitle(title, subtitle = "Top: absolute counts. Bottom: relative proportions.") +
+    theme(plot.title = element_text(size = 20, face = "bold"))
   g2 <- g +
     geom_col(
       aes(y = prop),
