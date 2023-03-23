@@ -37,7 +37,7 @@ app <- function() {
         hr(),
         h3("Respondent Demographics"),
         p("Aliquam tempor, libero non mollis varius, ex ex imperdiet arcu, vitae porta felis diam id sapien. Sed facilisis est sed cursus tincidunt. Suspendisse hendrerit velit sed odio finibus varius."),
-        plotOutput("demo_plot", height = "200"),
+        plotOutput("demo_plot"),
         h3("Common Trends"),
         p("Nam a risus eget est bibendum luctus ut at sem. Donec nec quam hendrerit, eleifend purus eget, posuere quam. Cras non ex vitae arcu pretium posuere ut tempor massa. Nullam vitae pellentesque nisl, eu hendrerit nisl. Interdum et malesuada fames ac ante ipsum primis in faucibus.")
       )
@@ -159,10 +159,15 @@ app <- function() {
           race_ldf
         any_response <- nrow(select_df) > 0
 
-        select_df %>%
-          ggplot(aes(x = response)) +
-          geom_bar() +
-          scale_x_discrete(guide = guide_axis(n.dodge = 2), drop = FALSE)
+        rdf <- select_df %>%
+          count_prop_complete()
+
+        rdf %>%
+          ggplot(aes(x = response)) %>%
+          stack_freq_prop()
+
+
+
 
         }
 
