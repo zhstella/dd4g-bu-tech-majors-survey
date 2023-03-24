@@ -50,7 +50,7 @@ app <- function() {
             selectInput(
               "qtype",
               label = "Select question type",
-              choices = c("Agreement", "Adjectives", "Course Satisfaction"),
+              choices = c("Agreement", "Adjectives", "Course Satisfaction", "Discrimination"),
               multiple = FALSE
             ), selectInput(
               "question",
@@ -74,7 +74,8 @@ app <- function() {
 
     )),
     hr(),
-    imageOutput("photo"))
+    imageOutput("photo", height = "1%", width = "1%")
+)
 
   server <- function(input, output, session) {
     observe({
@@ -99,10 +100,10 @@ app <- function() {
         )
     })
     observe({
-      if(input$qtype == "Department Satisfaction")
+      if(input$qtype == "Discrimination")
         updateSelectInput(session, "question",
-                          choices = unique(dep_tbl$selected_q),
-                          label = "Select department"
+                          choices = unique(discrimination_q_tbl$selected_q),
+                          label = "Select question"
         )
     })
 
@@ -110,8 +111,7 @@ app <- function() {
       list(
         src = "../techcollectivelogo.png",
         contentType = "image/png",
-        width = 200,
-        height = 50
+        height = "50px"
       )
     }, deleteFile = FALSE)
 
@@ -121,16 +121,18 @@ app <- function() {
 
         if (input$qtype == "Course Satisfaction") {
           cdf = course_ldf #cdf = current dataframe
-          graphTitle = paste("Survey Prompt: How satisfied are you in regards to the instructional support \n (ex. support from professors) you've received in", input$question, "?")
+          graphTitle = paste("Survey Prompt: How satisfied are you in regards to the instructional support\n(ex. support from professors) you've received in", input$question, "?")
         } else if (input$qtype == "Adjectives"){
           cdf = adj_ldf
           v <- strsplit(input$question, split = ":")
-          graphTitle = paste("Survey Prompt: Please select one option between the following set of adjectives that best represents \n how you would rate your major department based on what you have seen and/or your own \n personal experience: ", "1 = ", v[[1]], "and ", "5 = ", v[[1:2]])
+          graphTitle = paste("Survey Prompt: Please select one option between the following set of adjectives that best\nrepresents how you would rate your major department based on what you have seen and/or\nyour own personal experience: ", "1 = ", v[[1]], "and ", "5 = ", v[[1:2]])
         }else if (input$qtype == "Agreement"){
           cdf = agreement_ldf
-          graphTitle = paste("Survey Prompt: Please indicate your level of agreement with the following statement: \n", input$question)
+          graphTitle = paste("Survey Prompt: Please indicate your level of agreement with the following statement:\n", input$question)
+        }else if (input$qtype == "Discrimination"){
+          cdf = dis_ldf
+          graphTitle = paste("Survey Prompt:", input$question)
         }
-
         input <- list(selected_q = input$question)
         select_df <-
           cdf %>%
