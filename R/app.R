@@ -23,17 +23,16 @@ app <- function() {
             href = "https://sites.bu.edu/dei-in-tech/")),
         hr(),
         h3("What is the DEI in Tech Climate Survey?"),
-        p("Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nunc vitae metus eget lectus posuere facilisis. Ut tempor tempus consectetur. Fusce eu semper ligula. Class aptent taciti sociosqu ad litora torquent per conubia nostra, per inceptos himenaeos. Aliquam tempor, libero non mollis varius, ex ex imperdiet arcu, vitae porta felis diam id sapien. Sed facilisis est sed cursus tincidunt. Suspendisse hendrerit velit sed odio finibus varius."),
-        h3("How was the survey created?"),
-        p("Nam a risus eget est bibendum luctus ut at sem. Donec nec quam hendrerit, eleifend purus eget, posuere quam. Cras non ex vitae arcu pretium posuere ut tempor massa. Nullam vitae pellentesque nisl, eu hendrerit nisl. Interdum et malesuada fames ac ante ipsum primis in faucibus."),
+        p("The purpose of this survey was to assess the climate of tech departments at Boston University. This survey was intended for students in Computer Science, Math and Stats, Computing and Data Science, Information Systems, and Computer Engineering. The survey was modeled after already existing climate surveys from various institutions, including the University of Michigan Computer Science and Engineering Climate, Diversity, Equity, and Inclusion Assessment.
+"),
         h3("What can I do on this site?"),
-        p("Donec est arcu, tristique a fringilla eu, mollis a diam. Duis fermentum aliquam quam vel finibus. Fusce vitae nibh nisl. Aenean ac purus est. Aenean in tincidunt nulla. Fusce maximus cursus enim, id blandit massa rhoncus vel. Duis ullamcorper in mi ut volutpat. Quisque sit amet luctus velit. Sed maximus tortor ipsum.")
+        p("Navigate to the “General Report” tab to view the Climate Survey Report. Navigate to the “Build-a-Graph” tab if you’d like to interact with the data yourself. Here you can select specific questions from the survey and see how students responded. ")
       )
     ),
     tabPanel(
-      "General Report",
+      "Survey Report",
       mainPanel(
-        h1("General Report and Summaries"),
+        h1("Survey Report"),
         p("Below is a general overview of the demographics of students who completed the survey and summaries detailing the common trends seen throughout the survey."),
         hr(),
         h3("Respondent Demographics"),
