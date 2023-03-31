@@ -2,11 +2,13 @@ library(shiny)
 library(gt)
 library(plotly)
 library(ggplot2)
+library(shinyjs)
 
 
 app <- function() {
 
   ui <- fluidPage(
+    useShinyjs(),
     fluidRow(
     titlePanel("DEI in Tech Climate Survey Interactive Report"),
     tabsetPanel(
@@ -49,7 +51,12 @@ app <- function() {
             selectInput(
               "qtype",
               label = "Select question type",
-              choices = c("Agreement", "Adjectives", "Course Satisfaction", "Discrimination"),
+              choices = c("Agreement", "Adjectives", "Course Satisfaction", "Department Course Satisfaction", "Discrimination"),
+              multiple = FALSE
+            ), selectInput(
+              "dep",
+              label = "Filter by course or by department?",
+              choices = c("Course", "Department"),
               multiple = FALSE
             ), selectInput(
               "question",
@@ -74,9 +81,15 @@ app <- function() {
     )),
     hr(),
     imageOutput("photo", height = "1%", width = "1%")
+
 )
 
   server <- function(input, output, session) {
+    observe({
+      if(input$qtype != "Course Satisfaction")
+        shinyjs::hide("dep")
+
+    })
     observe({
       if(input$qtype == "Agreement")
         updateSelectInput(session, "question",
@@ -89,6 +102,21 @@ app <- function() {
         updateSelectInput(session, "question",
                           choices = unique(course_ldf$question_text),
                           label = "Select course",
+                          shinyjs::show("dep")
+        )
+    })
+    observe({
+      if(input$dep == "Department")
+        updateSelectInput(session, "question",
+                          choices = unique(dep_tbl$selected_q),
+                          label = "Select department"
+        )
+    })
+    observe({
+      if(input$dep == "Course")
+        updateSelectInput(session, "question",
+                          choices = unique(course_ldf$question_text),
+                          label = "Select department"
         )
     })
     observe({
@@ -118,7 +146,7 @@ app <- function() {
       {
         var <- input$variable
 
-        if (input$qtype == "Course Satisfaction") {
+        if (input$qtype == "Course Satisfaction" & input$dep == "Course") {
           cdf = course_ldf #cdf = current dataframe
           graphTitle = paste("Survey Prompt: How satisfied are you in regards to the instructional support\n(ex. support from professors) you've received in", input$question, "?")
         } else if (input$qtype == "Adjectives"){
@@ -131,6 +159,9 @@ app <- function() {
         }else if (input$qtype == "Discrimination"){
           cdf = dis_ldf
           graphTitle = paste("Survey Prompt:", input$question)
+        }else if (input$qtype == "Course Satisfaction" & input$dep == "Department"){
+          cdf = course_ldf
+          graphTitle = paste("The total course satisfaction for ",input$question, "courses are...")
         }
         input <- list(selected_q = input$question)
         select_df <-
