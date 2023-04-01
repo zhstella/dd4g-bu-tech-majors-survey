@@ -52,7 +52,8 @@ app <- function() {
               "qtype",
               label = "Select question type",
               choices = c("Agreement", "Adjectives", "Course Satisfaction", "Discrimination"),
-              multiple = FALSE
+              multiple = FALSE,
+              selected = "Agreement"
             ), selectInput(
               "dep",
               label = "Filter by course or by department?",
@@ -86,53 +87,49 @@ app <- function() {
 
   server <- function(input, output, session) {
     observe({
-      if(input$qtype == "Agreement")
+      if(input$qtype == "Agreement"){
         updateSelectInput(session, "question",
                           choices = unique(agreement_q$question_text),
                           label = "Select agreement statement"
+
         )
-    })
-    observe({
-      if(input$qtype == "Course Satisfaction")
+      }
+      if(input$qtype == "Course Satisfaction"){
         updateSelectInput(session, "question",
                           choices = unique(course_ldf$question_text),
                           label = "Select course",
                           shinyjs::show("dep")
         )
-    })
-    observe({
-      if(input$dep == "Department")
+      }
+      if(input$qtype == "Course Satisfaction" & input$dep == "Department"){
         updateSelectInput(session, "question",
                           choices = unique(dep_tbl$selected_q),
                           label = "Select department"
         )
-    })
-    observe({
-      if(input$dep == "Course")
+      }
+      if(input$qtype == "Course Satisfaction" & input$dep == "Course"){
         updateSelectInput(session, "question",
                           choices = unique(course_ldf$question_text),
-                          label = "Select department"
+                          label = "Select course"
         )
-    })
-    observe({
-      if(input$qtype == "Adjectives")
+      }
+      if(input$qtype == "Adjectives"){
         updateSelectInput(session, "question",
                           choices = unique(adjectives_q$question_text),
                           label = "Select adjectives to compare",
         )
-    })
-    observe({
-      if(input$qtype == "Discrimination")
+      }
+      if(input$qtype == "Discrimination"){
         updateSelectInput(session, "question",
                           choices = unique(discrimination_q_tbl$selected_q),
                           label = "Select question"
         )
-    })
-    observe({
+      }
       if(input$qtype != "Course Satisfaction")
         shinyjs::hide("dep")
-
     })
+
+
 
     output$photo <- renderImage({
       list(
@@ -152,7 +149,7 @@ app <- function() {
         } else if (input$qtype == "Adjectives"){
           cdf = adj_ldf
           v <- strsplit(input$question, split = ":")
-          graphTitle = paste("Survey Prompt: Please select one option between the following set of adjectives that best\nrepresents how you would rate your major department based on what you have seen and/or\nyour own personal experience: ", "1 = ", v[[1]], "and ", "5 = ", v[[1:2]])
+          graphTitle = paste("Survey Prompt: Please select one option between the following set of adjectives that best\nrepresents how you would rate your major department based on what you have seen and/or\nyour own personal experience: ", "1 = ", v[[1]], "and ", "5 = ", v[1[1]], class(v))
         }else if (input$qtype == "Agreement"){
           cdf = agreement_ldf
           graphTitle = paste("Survey Prompt: Please indicate your level of agreement with the following statement:\n", input$question)
