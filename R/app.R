@@ -148,8 +148,8 @@ app <- function() {
           graphTitle = paste("Survey Prompt: How satisfied are you in regards to the instructional support\n(ex. support from professors) you've received in", input$question, "?")
         } else if (input$qtype == "Adjectives"){
           cdf = adj_ldf
-          v <- strsplit(input$question, split = ":")
-          graphTitle = paste("Survey Prompt: Please select one option between the following set of adjectives that best\nrepresents how you would rate your major department based on what you have seen and/or\nyour own personal experience: ", "1 = ", v[[1]], "and ", "5 = ", v[1[1]], class(v))
+          adj1 <- unlist(strsplit(input$question, split = ":"))
+          graphTitle = paste("Survey Prompt: Please select one option between the following set of adjectives that best\nrepresents how you would rate your major department based on what you have seen and/or\nyour own personal experience: ", "1 = ", adj1, "and ", "5 = ", substring(input$question, nchar(adj1)+2, nchar(input$question)))
         }else if (input$qtype == "Agreement"){
           cdf = agreement_ldf
           graphTitle = paste("Survey Prompt: Please indicate your level of agreement with the following statement:\n", input$question)
