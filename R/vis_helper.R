@@ -1,4 +1,6 @@
 library(plotly)
+library(ggplot2)
+library(scales)
 
 stack_freq_prop <- function(g, title) {
   g1 <- g +

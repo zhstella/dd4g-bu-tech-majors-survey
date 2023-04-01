@@ -51,7 +51,7 @@ app <- function() {
             selectInput(
               "qtype",
               label = "Select question type",
-              choices = c("Agreement", "Adjectives", "Course Satisfaction", "Department Course Satisfaction", "Discrimination"),
+              choices = c("Agreement", "Adjectives", "Course Satisfaction", "Discrimination"),
               multiple = FALSE
             ), selectInput(
               "dep",
@@ -85,11 +85,6 @@ app <- function() {
 )
 
   server <- function(input, output, session) {
-    observe({
-      if(input$qtype != "Course Satisfaction")
-        shinyjs::hide("dep")
-
-    })
     observe({
       if(input$qtype == "Agreement")
         updateSelectInput(session, "question",
@@ -133,6 +128,11 @@ app <- function() {
                           label = "Select question"
         )
     })
+    observe({
+      if(input$qtype != "Course Satisfaction")
+        shinyjs::hide("dep")
+
+    })
 
     output$photo <- renderImage({
       list(
@@ -161,7 +161,7 @@ app <- function() {
           graphTitle = paste("Survey Prompt:", input$question)
         }else if (input$qtype == "Course Satisfaction" & input$dep == "Department"){
           cdf = course_ldf
-          graphTitle = paste("The total course satisfaction for ",input$question, "courses are...")
+          graphTitle = paste("This data represents the overall course satisfaction for all",input$question, "courses.")
         }
         input <- list(selected_q = input$question)
         select_df <-
