@@ -1,0 +1,235 @@
+---
+title: "Stan Model"
+author: "Daniel Sussman"
+date: "2023-03-09"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## R Markdown
+
+This is an R Markdown document. Markdown is a simple formatting syntax for authoring HTML, PDF, and MS Word documents. For more details on using R Markdown see <http://rmarkdown.rstudio.com>.
+
+When you click the **Knit** button a document will be generated that includes both content as well as the output of any embedded R code chunks within the document. You can embed an R code chunk like this:
+
+```{r}
+library(rstan)
+options(mc.cores = parallel::detectCores())
+```
+
+
+```{stan model_from_cgpt, output.var="stan_sat_model"}
+data {
+  int<lower=1> N;                     // Number of observations
+  
+  int<lower=1> C;                     // Number of response levels
+  int<lower=1, upper=C> response[N];  // Vector of responses
+
+  int<lower=1> D;                     // Number of departments
+  int<lower=1, upper=D> dept[N];      // Vector of department indicators
+  
+  int<lower=1> L;                     // Number of course levels
+  int<lower=1, upper=L> level[N];     // Vector of level indicators
+  
+  int<lower=1> K;                     // Number of courses
+  int<lower=1, upper=K> course[N];    // Vector of course indicators
+}
+
+parameters {
+  vector[D-1] dept_offset;      // Department level offset
+  vector[L-1] level_offset;     // Level level offset
+  vector[K-1] course_offset;  // course level offset
+  real<lower=0> sigma_dept;   // Standard deviation of department offsets
+  real<lower=0> sigma_level;  // Standard deviation of level offsets
+  // real<lower=0> sigma_course; // Standard deviation of course offsets
+  ordered[C - 1] c;
+}
+// we define the below assuming we have an "Other" category
+// ideally this would also be dynamic
+transformed parameters {
+  vector[D] dept_offset_;      // Department level offset
+  vector[L] level_offset_;     // Level level offset
+  vector[K] course_offset_;  // course level offset
+  dept_offset_[1:(D-1)] = dept_offset;
+  dept_offset_[D] = 0;
+  level_offset_[1:(L-1)] = level_offset;
+  level_offset_[L] = 0;
+  course_offset_[1:(K-1)] = course_offset;
+  course_offset_[K] = 0;
+}
+
+model {
+  // Priors
+  for (d in 1:(D-1)){
+    dept_offset[d] ~ normal(0, sigma_dept);
+  }
+  for (l in 1:(L-1)){
+    level_offset[l] ~ normal(0, sigma_level);
+  }
+  for (k in 1:(K-1)){
+    course_offset[k] ~ normal(0, 1);
+  }
+  sigma_dept ~ cauchy(0, 1);
+  sigma_level ~ cauchy(0, 1);
+  // sigma_course ~ cauchy(0, 1);
+
+  // Likelihood
+  for (n in 1:N) {
+    real theta = dept_offset_[dept[n]] + 
+      level_offset_[level[n]] + 
+      course_offset_[course[n]];
+    response[n] ~ ordered_logistic(theta, c);
+  }
+}
+
+```
+
+
+
+```{r load_data_and_fns, echo=FALSE}
+source(here::here("R/source_all.R"))
+```
+
+
+```{r setupt_course_ldf}
+ddf_s <- ddf %>%
+  mutate(
+    gender = as_factor(ifelse(
+      str_detect(gender, "not listed"),
+      "Pref. not listed",
+      gender
+    )),
+    international = as_factor(replace_na(international, "No response")),
+    first_gen = as_factor(replace_na(first_gen, "No response"))
+  ) %>%
+  simplify_race_var()
+
+course_num_re <- "[A-Z]{3} [A-Z]{2}\\W*[0-9]{3}"
+course_satisfaction_q <- original_question_df %>%
+  filter(
+    str_detect(question_text, "satisfied"),
+    str_detect(question_text, "agreement", negate = TRUE)
+  ) %>%
+  mutate(question_text = str_extract(question_text, course_num_re))
+satisfaction_level <-
+  c(
+    "Extremely dissatisfied",
+    "Somewhat dissatisfied",
+    "Neither satisfied nor dissatisfied",
+    "Somewhat satisfied",
+    "Extremely satisfied"
+  )
+
+course_ldf <- ddf_s %>%
+  pivot_longer(
+    cols = course_satisfaction_q$question_id,
+    names_to = "question_id",
+    values_to = "response",
+    values_drop_na = TRUE
+  ) %>%
+  filter(response != "Did not take this course.") %>%
+  left_join(course_satisfaction_q, by = "question_id") %>%
+  mutate(
+    response =
+     factor(
+       response,
+       levels = satisfaction_level,
+       ordered = TRUE
+    )
+  ) %>% 
+  select(response, course_orig = question_text)
+```
+
+
+
+```{r}
+course_ldf <- course_ldf %>%
+  mutate(
+    dept_orig = str_sub(course_orig, end = 6),
+    level_orig = as.integer(str_extract(course_orig, "\\d"))
+  )
+
+
+course_ldf <- course_ldf %>% 
+  mutate(
+    dept = fct_lump_min(dept_orig, min = 100),
+    course = fct_lump_min(course_orig, min = 20),
+    level = ifelse(level_orig > 2, "Upper", "Lower")
+  ) %>%
+  group_by(dept, level) %>% 
+  mutate(w = n_distinct(course)) %>%
+  group_by(course) %>% 
+  mutate(w = w / n()) %>% 
+  ungroup() %>% 
+  mutate(
+    course = fct_lump_min(course, min = 2, w = w)
+  ) %>%
+  select(-w) %>%
+  filter(course != "Other", dept != "Other")
+course_ldf %>% 
+  count(level, dept, course) %>% 
+  arrange(n) %>% 
+  print() %>% 
+  count(level, dept) %>% 
+  arrange(n)
+```
+
+
+```{r stan_param}
+to_int <- function(.) as.integer(as_factor(.))
+  # int<lower=1> N;                     // Number of observations
+N <- nrow(course_ldf)
+
+  # int<lower=1> C;                     // Number of response levels
+  # int<lower=1, upper=C> response[N];  // Vector of responses
+C <- nlevels(course_ldf$response)
+response <- as.integer(course_ldf$response)
+
+  # int<lower=1> D;                     // Number of departments
+  # int<lower=1, upper=D> dept[N];      // Vector of department indicators
+dept <- to_int(course_ldf$dept)
+D <- max(dept)
+
+  # int<lower=1> L;                     // Number of course levels
+  # int<lower=1, upper=L> level[N];     // Vector of level indicators
+level <- to_int(course_ldf$level)
+L <- max(level)
+  
+  # int<lower=1> K;                     // Number of courses
+  # int<lower=1, upper=K> course[N];    // Vector of course indicators
+course <- to_int(course_ldf$course)
+K <- max(course)
+sampling_data <- 
+    list(
+      N = N,
+      C = C,
+      response = response,
+      D = D,
+      dept = dept,
+      L = L,
+      level = level,
+      K = K,
+      course = course
+    ) %>% print(max = 10)
+```
+
+
+```{r}
+sat_model_fit <- sampling(stan_sat_model, sampling_data)
+```
+
+
+```{r}
+fit_tbl <- as_tibble(as.data.frame(sat_model_fit))
+cor_mat <- fit_tbl %>% cor()
+as_tibble(cor_mat) %>% 
+  mutate(v1 = rownames(cor_mat)) %>% 
+  pivot_longer(-v1, names_to = "v2", values_to = "cor") %>%
+  filter(is.na(cor))
+  filter(v1 != v2) %>%
+  filter(!str_detect(str_c(v1, v2), "_\\[")) %>% 
+  filter(is.na(cor))
+```
