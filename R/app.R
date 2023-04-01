@@ -175,7 +175,7 @@ app <- function() {
 
           rdf %>%
             ggplot(aes(x = response)) %>%
-            stack_freq_prop(title = input$question)
+            stack_freq_prop(title = graphTitle)
         }else{
           rdf <- select_df %>%
             count_prop_complete(.data[[var]])
