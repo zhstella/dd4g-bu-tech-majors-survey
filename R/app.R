@@ -3,6 +3,8 @@ library(gt)
 library(plotly)
 library(ggplot2)
 library(shinyjs)
+library(shinyBS)
+
 
 
 app <- function() {
@@ -50,16 +52,28 @@ app <- function() {
           sidebarPanel(
             selectInput(
               "qtype",
-              label = "Select question type",
+              label = tags$span(
+                "Select question type", bsButton("q", label = "", icon = icon("info"), style = "info", size = "extra-small")),
               choices = c("Agreement", "Adjectives", "Course Satisfaction", "Discrimination"),
               multiple = FALSE,
               selected = "Agreement"
-            ), selectInput(
+            ),  bsPopover(
+              id = "q",
+              title = "More information",
+              content = paste0(
+                "Select a section or question type from the survey."
+              ),
+              placement = "right",
+              trigger = "hover",
+              options = list(container = "body")
+            ),
+            selectInput(
               "dep",
               label = "Filter by course or by department?",
               choices = c("Course", "Department"),
               multiple = FALSE
-            ), selectInput(
+            ),
+            selectInput(
               "question",
               label = "Select question",
               choices = NULL,
@@ -67,10 +81,21 @@ app <- function() {
             ),
             selectInput(
               "variable",
-              label = "Select variable",
+              label = tags$span(
+                "Select variable", bsButton("v", label = "", icon = icon("info"), style = "info", size = "extra-small")),
               choices = c("gender", "race", "first_gen", "international", "major", "prepared", "none"),
-              multiple = FALSE
+              multiple = FALSE,
+            ),  bsPopover(
+              id = "v",
+              title = "More information",
+              content = paste0(
+                "To view breakdowns of the selected question by demographic attributes, identify the variable of interest."
+              ),
+              placement = "right",
+              trigger = "hover",
+              options = list(container = "body")
             )
+
           ),
           mainPanel(
             plotOutput("freq_plot")
