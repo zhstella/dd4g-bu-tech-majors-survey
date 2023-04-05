@@ -4,6 +4,7 @@ library(plotly)
 library(ggplot2)
 library(shinyjs)
 library(shinyBS)
+library(shinyalert)
 
 
 
@@ -13,9 +14,9 @@ app <- function() {
     useShinyjs(),
     fluidRow(
     titlePanel("DEI in Tech Climate Survey Interactive Report"),
-    tabsetPanel(
+    tabsetPanel(id = "inTabset",
     tabPanel(
-      "Welcome",
+      "Welcome", value = "panel1",
       mainPanel(
         h1("Welcome to the 2022 DEI in Tech Climate Survey Report"),
         p("This report is brought to you by the DEI Tech Collective.
@@ -30,8 +31,24 @@ app <- function() {
         p("The purpose of this survey was to assess the climate of tech departments at Boston University. This survey was intended for students in Computer Science, Math and Stats, Computing and Data Science, Information Systems, and Computer Engineering. The survey was modeled after already existing climate surveys from various institutions, including the University of Michigan Computer Science and Engineering Climate, Diversity, Equity, and Inclusion Assessment.
 "),
         h3("What can I do on this site?"),
-        p("Navigate to the “General Report” tab to view the Climate Survey Report. Navigate to the “Build-a-Graph” tab if you’d like to interact with the data yourself. Here you can select specific questions from the survey and see how students responded. ")
-      )
+        p("Navigate to the “Survey Report” tab to view the Climate Survey Report. Navigate to the “Build-a-Graph” tab if you’d like to interact with the data yourself. Here you can select specific questions from the survey and see how students responded. "),
+
+        h3(id = "how", "How do I use Build-a-Graph?"),
+        strong("How to Build a Graph"),
+        tags$ol(
+          tags$li("Select a section or question type from the survey"),
+          tags$li("Choose the particular question of interest"),
+          tags$li("To view breakdowns of the selected question by demographic attributes, identify the variable of interest")
+        ),
+        strong("How to Read the Graphs"),
+        tags$ol(
+          tags$li("The top graph, ‘count’, displays the total number of students that selected each response. When a variable is selected, the responses will be broken down by the selected variable. This means if the variable ‘gender’ is selected, the values in this graph will show the number of female students, male students, etc. that selected each response."),
+          tags$li("The bottom graph, ‘prop’, displays the total number of students that selected each response, in proportion to the total number of students that responded to the question. When a variable is selected, the responses will be broken down by the selected variable. This means if the variable ‘gender’ is selected, the values in this graph will show the number of female students, male students, etc. that selected each response, in proportion to the total number of female students, male students etc. that responded to the question."),
+          tags$li("Example: The graph below is the data for the question, 'Have you ever experienced discrimination or disrespectful/inappropriate behavior in your major department?' and the gender variable is selected.
+In the top graph, when looking at the values for the 'No' response, female has a value of 110. This means 110 female students responded No. In the bottom graph, when looking at the values for the 'No' response, female has a value of 64%. This means 64% of all female students responded No."),
+           )
+        ),
+      imageOutput("photo1", height = "50%", width = "50%"),
     ),
     tabPanel(
       "Survey Report",
@@ -94,7 +111,9 @@ app <- function() {
               placement = "right",
               trigger = "hover",
               options = list(container = "body")
-            )
+            ),
+            p("Need help with using the tool or interpreting the graphs?"),
+            actionButton("help", "Help")
 
           ),
           mainPanel(
@@ -111,6 +130,23 @@ app <- function() {
 )
 
   server <- function(input, output, session) {
+    observeEvent(input$help, {
+      #updateTabsetPanel(session, "inTabset",
+             #           selected = "panel1")
+      shinyalert("How to read the graphs", "1.
+The top graph, ‘count’, displays the total number of students that selected each response. When a variable is selected, the responses will be broken down by the selected variable. This means if the variable ‘gender’ is selected, the values in this graph will show the number of female students, male students, etc. that selected each response.
+2.
+The bottom graph, ‘prop’, displays the total number of students that selected each response, in proportion to the total number of students that responded to the question. When a variable is selected, the responses will be broken down by the selected variable. This means if the variable ‘gender’ is selected, the values in this graph will show the number of female students, male students, etc. that selected each response, in proportion to the total number of female students, male students etc. that responded to the question.
+3. Example
+For example, let’s say we’re looking at the question, 'Have you ever experienced discrimination or disrespectful/inappropriate behavior in your major department?' and the gender variable is selected.
+In the top graph, when looking at the values for the 'No' response, female has a value of 110. This means 110 female students responded No. In the bottom graph, when looking at the values for the 'No' response, female has a value of 64%. This means 64% of all female students responded No.
+
+Return to the Welcome tab and scroll down to the, 'How do I use Build-a-Graph?' section to see an example with a graph.
+
+")
+
+    })
+
     observe({
       if(input$qtype == "Agreement"){
         updateSelectInput(session, "question",
@@ -155,12 +191,19 @@ app <- function() {
     })
 
 
-
     output$photo <- renderImage({
       list(
         src = "../techcollectivelogo.png",
         contentType = "image/png",
         height = "50px"
+      )
+    }, deleteFile = FALSE)
+
+    output$photo1 <- renderImage({
+      list(
+        src = "../example.png",
+        contentType = "image/png",
+        height = "450px"
       )
     }, deleteFile = FALSE)
 
