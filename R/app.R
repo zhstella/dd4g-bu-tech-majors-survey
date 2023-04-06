@@ -6,8 +6,6 @@ library(shinyjs)
 library(shinyBS)
 library(shinyalert)
 
-
-
 app <- function() {
 
   ui <- fluidPage(
@@ -17,8 +15,8 @@ app <- function() {
     tabsetPanel(id = "inTabset",
     tabPanel(
       "Welcome", value = "panel1",
-      mainPanel(style = "margin-left: auto; width: 50%",
-        h1("Welcome to the 2022 DEI in Tech Climate Survey Report"),
+      mainPanel(style = "margin-left: 13%; margin-right: 15%; width: 75%",
+        h1(style = "text-align: center", "Welcome to the 2022 DEI in Tech Climate Survey Report"),
         p("This report is brought to you by the DEI Tech Collective.
         The Collective is an opportunity for BU tech and computing groups to unite around efforts to educate each other
         and address inequity issues within the community."),
@@ -57,7 +55,9 @@ app <- function() {
 In the top graph, when looking at the values for the 'No' response, female (the red bar) has a value of 110. This means 110 female students responded No. In the bottom graph, when looking at the values for the 'No' response, female (the red bar) has a value of 64%. This means 64% of all female students responded No."),
            )
         ),
+
       imageOutput("photo1", height = "50%", width = "50%"),
+
     ),
     tabPanel(
       "Survey Report",
