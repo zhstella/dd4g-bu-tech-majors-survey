@@ -6,6 +6,10 @@ library(shinyjs)
 library(shinyBS)
 library(shinyalert)
 
+rm(list=ls())
+source("setup_data_frames.R")
+load("all_data.RData")
+
 app <- function() {
 
   ui <- fluidPage(
@@ -49,13 +53,12 @@ app <- function() {
         ),
         strong("How to Read the Graphs"),
         tags$ol(
-          tags$li("The top graph, ‘count’, displays the total number of students that selected each response. When a variable is selected, the responses will be broken down by the selected variable. This means if the variable ‘gender’ is selected, the values in this graph will show the number of female students, male students, etc. that selected each response."),
+          tags$li("Without a variable selected (or with 'none' selected), the top graph, ‘count’, displays the total number of students that selected each response. When a variable is selected, the responses will be broken down by the selected variable. This means if the variable ‘gender’ is selected, the values in this graph will show the number of female students, male students, etc. that selected each response."),
           tags$li("The bottom graph, ‘prop’, displays the total number of students that selected each response, in proportion to the total number of students that responded to the question. When a variable is selected, the responses will be broken down by the selected variable. This means if the variable ‘gender’ is selected, the values in this graph will show the number of female students, male students, etc. that selected each response, in proportion to the total number of female students, male students etc. that responded to the question."),
           tags$li("Example: The graph below is the data for the question, 'Have you ever experienced discrimination or disrespectful/inappropriate behavior in your major department?' and the gender variable is selected.
 In the top graph, when looking at the values for the 'No' response, female (the red bar) has a value of 110. This means 110 female students responded No. In the bottom graph, when looking at the values for the 'No' response, female (the red bar) has a value of 64%. This means 64% of all female students responded No."),
            ),
-        imageOutput("photo1", height = "50%", width = "50%")
-        ),
+        imageOutput("photo1", height = "50%", width = "50%")),
 
 
 
@@ -213,7 +216,7 @@ Please return to the Welcome tab and scroll down to the, 'How do I use Build-a-G
 
     output$photo <- renderImage({
       list(
-        src = "../techcollectivelogo.png",
+        src = "techcollectivelogo.png",
         contentType = "image/png",
         height = "50px"
       )
@@ -221,7 +224,7 @@ Please return to the Welcome tab and scroll down to the, 'How do I use Build-a-G
 
     output$photo1 <- renderImage({
       list(
-        src = "../example.png",
+        src = "example.png",
         contentType = "image/png",
         height = "450px"
       )
@@ -253,10 +256,12 @@ Please return to the Welcome tab and scroll down to the, 'How do I use Build-a-G
           cdf = course_ldf
           graphTitle = paste("This data represents the overall course satisfaction for all",input$question, "courses.")
         }
-        input <- list(selected_q = input$question)
+        # input <- list(selected_q = input$question)
+        print(input$question)
         select_df <-
           cdf %>%
-          filter(str_detect(question_text, input$selected_q))
+          filter(str_detect(question_text, input$question))
+        print(select_df)
         any_response <- nrow(select_df) > 0
 
         if (var == "none"){
@@ -276,7 +281,7 @@ Please return to the Welcome tab and scroll down to the, 'How do I use Build-a-G
         }
       },
       height = 600
-    )
+    ) %>% bindEvent(input$question,input$variable)
 
     output$demo_plot <- renderPlot(
       {
