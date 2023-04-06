@@ -112,7 +112,7 @@ In the top graph, when looking at the values for the 'No' response, female has a
               trigger = "hover",
               options = list(container = "body")
             ),
-            p("Need help with using the tool or interpreting the graphs?"),
+            p("Need help with using reading the graphs?"),
             actionButton("help", "Help")
 
           ),
@@ -223,7 +223,12 @@ Return to the Welcome tab and scroll down to the, 'How do I use Build-a-Graph?' 
           graphTitle = paste("Survey Prompt: Please indicate your level of agreement with the following statement:\n", input$question)
         }else if (input$qtype == "Discrimination"){
           cdf = dis_ldf
-          graphTitle = paste("Survey Prompt:", input$question)
+          if (str_detect(input$question, "experienced")){
+            graphTitle = paste("Survey Prompt:", "Have you ever experienced discrimination or disrespectful/inappropriate\nbehavior in your major department?")
+          }else{
+            graphTitle = paste("Survey Prompt:", "Have you ever witnessed discrimination or disrespectful/inappropriate\nbehavior in your major department?")
+          }
+
         }else if (input$qtype == "Course Satisfaction" & input$dep == "Department"){
           cdf = course_ldf
           graphTitle = paste("This data represents the overall course satisfaction for all",input$question, "courses.")
