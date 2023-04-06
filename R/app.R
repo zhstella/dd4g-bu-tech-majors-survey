@@ -53,15 +53,16 @@ app <- function() {
           tags$li("The bottom graph, ‘prop’, displays the total number of students that selected each response, in proportion to the total number of students that responded to the question. When a variable is selected, the responses will be broken down by the selected variable. This means if the variable ‘gender’ is selected, the values in this graph will show the number of female students, male students, etc. that selected each response, in proportion to the total number of female students, male students etc. that responded to the question."),
           tags$li("Example: The graph below is the data for the question, 'Have you ever experienced discrimination or disrespectful/inappropriate behavior in your major department?' and the gender variable is selected.
 In the top graph, when looking at the values for the 'No' response, female (the red bar) has a value of 110. This means 110 female students responded No. In the bottom graph, when looking at the values for the 'No' response, female (the red bar) has a value of 64%. This means 64% of all female students responded No."),
-           )
+           ),
+        imageOutput("photo1", height = "50%", width = "50%")
         ),
 
-      imageOutput("photo1", height = "50%", width = "50%"),
+
 
     ),
     tabPanel(
       "Survey Report",
-      mainPanel(
+      mainPanel(style = "margin-left: 13%; margin-right: 15%; width: 75%",
         h1("Survey Report"),
         p("Thank you for your interest in the DEI in Tech Student Climate Survey. This campaign was motivated by the need to better understand student experiences in tech related departments at BU in an effort to inform areas for change and improvement. Please read on to learn more.
 "),
