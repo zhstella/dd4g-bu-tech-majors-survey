@@ -94,12 +94,21 @@ In the top graph, when looking at the values for the 'No' response, female (the 
               placement = "right",
               trigger = "hover",
               options = list(container = "body")
-            ),
-            selectInput(
+            ),selectInput(
               "dep",
-              label = "Filter by course or by department?",
+              label = tags$span(
+                "Filter by course or by department?", bsButton("depa", label = "", icon = icon("info"), style = "info", size = "extra-small")),
               choices = c("Course", "Department"),
-              multiple = FALSE
+              multiple = FALSE,
+            ), bsPopover(
+              id = "depa",
+              title = "More information",
+              content = paste0(
+                "View the course satisfaction for individual classes or view the total course satisfaction for courses within a department."
+              ),
+              placement = "right",
+              trigger = "hover",
+              options = list(container = "body")
             ),
             selectInput(
               "question",
