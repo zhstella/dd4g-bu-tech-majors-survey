@@ -17,7 +17,7 @@ app <- function() {
     tabsetPanel(id = "inTabset",
     tabPanel(
       "Welcome", value = "panel1",
-      mainPanel(
+      mainPanel(style = "margin-left: auto; width: 50%",
         h1("Welcome to the 2022 DEI in Tech Climate Survey Report"),
         p("This report is brought to you by the DEI Tech Collective.
         The Collective is an opportunity for BU tech and computing groups to unite around efforts to educate each other
@@ -28,10 +28,19 @@ app <- function() {
             href = "https://sites.bu.edu/dei-in-tech/")),
         hr(),
         h3("What is the DEI in Tech Climate Survey?"),
-        p("The purpose of this survey was to assess the climate of tech departments at Boston University. This survey was intended for students in Computer Science, Math and Stats, Computing and Data Science, Information Systems, and Computer Engineering. The survey was modeled after already existing climate surveys from various institutions, including the University of Michigan Computer Science and Engineering Climate, Diversity, Equity, and Inclusion Assessment.
+        p("	The survey was administered in the Spring of 2022 by the BU DEI Tech Collective. The purpose of this survey was to assess the climate of tech departments at Boston University and begin to fill that data gap. This survey was intended for students in Computer Science, Math and Stats, Computing and Data Science, Information Systems, and Computer Engineering. The survey was modeled after already existing climate surveys from various institutions, including the University of Michigan Computer Science and Engineering Climate, Diversity, Equity, and Inclusion Assessment and assessments from the Computing Research Association.
+
 "),
         h3("What can I do on this site?"),
-        p("Navigate to the “Survey Report” tab to view the Climate Survey Report. Navigate to the “Build-a-Graph” tab if you’d like to interact with the data yourself. Here you can select specific questions from the survey and see how students responded. "),
+        p("Navigate to the “Survey Report” tab to view the entire Climate Survey Report. This page includes:"),
+        tags$li("Additional survey background details"),
+        tags$li("BU population data overview"),
+        tags$li("Dispaly of respondent demographics"),
+        tags$li("Explanations of survey sections and accompanying trends"),
+        tags$li("Disclaimers and challenges to be aware of"),
+        p("\n"),
+        p("Navigate to the “Build-a-Graph” tab to interact with the data yourself. Here you can select specific questions from the survey and filter by variables to better understand
+        how different types of students responded. Information on the “General Report” tab will help with the interpretation of the data results that you compile."),
 
         h3(id = "how", "How do I use Build-a-Graph?"),
         strong("How to Build a Graph"),
@@ -45,7 +54,7 @@ app <- function() {
           tags$li("The top graph, ‘count’, displays the total number of students that selected each response. When a variable is selected, the responses will be broken down by the selected variable. This means if the variable ‘gender’ is selected, the values in this graph will show the number of female students, male students, etc. that selected each response."),
           tags$li("The bottom graph, ‘prop’, displays the total number of students that selected each response, in proportion to the total number of students that responded to the question. When a variable is selected, the responses will be broken down by the selected variable. This means if the variable ‘gender’ is selected, the values in this graph will show the number of female students, male students, etc. that selected each response, in proportion to the total number of female students, male students etc. that responded to the question."),
           tags$li("Example: The graph below is the data for the question, 'Have you ever experienced discrimination or disrespectful/inappropriate behavior in your major department?' and the gender variable is selected.
-In the top graph, when looking at the values for the 'No' response, female has a value of 110. This means 110 female students responded No. In the bottom graph, when looking at the values for the 'No' response, female has a value of 64%. This means 64% of all female students responded No."),
+In the top graph, when looking at the values for the 'No' response, female (the red bar) has a value of 110. This means 110 female students responded No. In the bottom graph, when looking at the values for the 'No' response, female (the red bar) has a value of 64%. This means 64% of all female students responded No."),
            )
         ),
       imageOutput("photo1", height = "50%", width = "50%"),
@@ -54,7 +63,8 @@ In the top graph, when looking at the values for the 'No' response, female has a
       "Survey Report",
       mainPanel(
         h1("Survey Report"),
-        p("Below is a general overview of the demographics of students who completed the survey and summaries detailing the common trends seen throughout the survey."),
+        p("Thank you for your interest in the DEI in Tech Student Climate Survey. This campaign was motivated by the need to better understand student experiences in tech related departments at BU in an effort to inform areas for change and improvement. Please read on to learn more.
+"),
         hr(),
         h3("Respondent Demographics"),
         p("Aliquam tempor, libero non mollis varius, ex ex imperdiet arcu, vitae porta felis diam id sapien. Sed facilisis est sed cursus tincidunt. Suspendisse hendrerit velit sed odio finibus varius."),
@@ -133,17 +143,17 @@ In the top graph, when looking at the values for the 'No' response, female has a
     observeEvent(input$help, {
       #updateTabsetPanel(session, "inTabset",
              #           selected = "panel1")
-      shinyalert("How to read the graphs", "1.
+      shinyalert("\n \n How to read the graphs", "1. Top Graph
 The top graph, ‘count’, displays the total number of students that selected each response. When a variable is selected, the responses will be broken down by the selected variable. This means if the variable ‘gender’ is selected, the values in this graph will show the number of female students, male students, etc. that selected each response.
-2.
+2. Bottom Graph
 The bottom graph, ‘prop’, displays the total number of students that selected each response, in proportion to the total number of students that responded to the question. When a variable is selected, the responses will be broken down by the selected variable. This means if the variable ‘gender’ is selected, the values in this graph will show the number of female students, male students, etc. that selected each response, in proportion to the total number of female students, male students etc. that responded to the question.
 3. Example
 For example, let’s say we’re looking at the question, 'Have you ever experienced discrimination or disrespectful/inappropriate behavior in your major department?' and the gender variable is selected.
 In the top graph, when looking at the values for the 'No' response, female has a value of 110. This means 110 female students responded No. In the bottom graph, when looking at the values for the 'No' response, female has a value of 64%. This means 64% of all female students responded No.
 
-Return to the Welcome tab and scroll down to the, 'How do I use Build-a-Graph?' section to see an example with a graph.
+Please return to the Welcome tab and scroll down to the, 'How do I use Build-a-Graph?' section if you'd like to see this example with the actual graph.
 
-")
+", size = "m")
 
     })
 
