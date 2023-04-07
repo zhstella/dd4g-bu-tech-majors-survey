@@ -6,7 +6,6 @@ library(shinyjs)
 library(shinyBS)
 library(shinyalert)
 
-rm(list=ls())
 source("setup_data_frames.R")
 load("all_data.RData")
 
@@ -257,12 +256,11 @@ Please return to the Welcome tab and scroll down to the, 'How do I use Build-a-G
           cdf = course_ldf
           graphTitle = paste("This data represents the overall course satisfaction for all",input$question, "courses.")
         }
-        # input <- list(selected_q = input$question)
-        print(input$question)
+
         select_df <-
           cdf %>%
           filter(str_detect(question_text, input$question))
-        print(select_df)
+
         any_response <- nrow(select_df) > 0
 
         if (var == "none"){
