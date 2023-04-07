@@ -1,10 +1,9 @@
 library(shiny)
-library(gt)
-library(plotly)
 library(ggplot2)
 library(shinyjs)
 library(shinyBS)
 library(shinyalert)
+
 
 source("setup_data_frames.R")
 load("all_data.RData")

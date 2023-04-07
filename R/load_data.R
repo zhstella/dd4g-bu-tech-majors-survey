@@ -2,8 +2,8 @@
 
 library(tidyverse)
 
-load(here::here("R/ddf.rda"))
-load(here::here("R/original_question_df.rda"))
+load("ddf.rda")
+load("original_question_df.rda")
 
 
 
