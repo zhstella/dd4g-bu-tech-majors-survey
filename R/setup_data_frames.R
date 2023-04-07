@@ -134,3 +134,14 @@ race_ldf <- ddf_s %>%
   left_join(race_q, by = "question_id")
 
 
+discrimination_q_tbl <-
+  tibble(
+    selected_q =
+      sort(unique(dis_q$question_text))
+  ) %>%
+  mutate(
+    selected_q_code = str_replace_all(selected_q, "\\W+", "_"),
+    title = str_glue("{selected_q}"),
+    subsection_title = "Discrimination",
+    which_df = "dis"
+  )
