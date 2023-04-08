@@ -146,7 +146,7 @@ Disclaimer: the determination to include this list of responses was to remain co
             trigger = "hover",
             options = list(container = "body")
           ),
-          p("Need help with using reading the graphs?"),
+          p("Need help with reading the graphs?"),
           actionButton("help", "Help")
 
         ),
