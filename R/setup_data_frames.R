@@ -145,3 +145,15 @@ discrimination_q_tbl <-
     subsection_title = "Discrimination",
     which_df = "dis"
   )
+
+dep_tbl <-
+    tibble(
+      selected_q =
+        sort(unique(str_sub(course_satisfaction_q$question_text, 1, 6)))
+    ) %>%
+    mutate(
+      selected_q_code = str_replace_all(selected_q, "\\W+", "_"),
+      title = str_glue("{selected_q} Department Satisfaction"),
+      subsection_title = "Satisfaction",
+      which_df = "course"
+    )
