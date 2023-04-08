@@ -8,6 +8,8 @@ library(shinyalert)
 source("setup_data_frames.R")
 
 
+variable_options <- c("gender", "race", "first_gen", "international", "major", "prepared", "none")
+names(variable_options) <- c("Gender", "Race", "First Gen", "International", "Major", "Preparedness", "None")
 
 ui <- fluidPage(
   useShinyjs(),
@@ -68,12 +70,18 @@ In the top graph, when looking at the values for the 'No' response, female (the 
       p("Thank you for your interest in the DEI in Tech Student Climate Survey. This campaign was motivated by the need to better understand student experiences in tech related departments at BU in an effort to inform areas for change and improvement. Please read on to learn more.
 "),
       hr(),
-      h3("Respondent Demographics"),
+      h3("Background"),
       p("Aliquam tempor, libero non mollis varius, ex ex imperdiet arcu, vitae porta felis diam id sapien. Sed facilisis est sed cursus tincidunt. Suspendisse hendrerit velit sed odio finibus varius."),
       plotOutput("demo_plot"),
-      h3("Common Trends"),
-      p("Nam a risus eget est bibendum luctus ut at sem. Donec nec quam hendrerit, eleifend purus eget, posuere quam. Cras non ex vitae arcu pretium posuere ut tempor massa. Nullam vitae pellentesque nisl, eu hendrerit nisl. Interdum et malesuada fames ac ante ipsum primis in faucibus.")
-    )
+      h3("Objectives"),
+      p("Nam a risus eget est bibendum luctus ut at sem. Donec nec quam hendrerit, eleifend purus eget, posuere quam. Cras non ex vitae arcu pretium posuere ut tempor massa. Nullam vitae pellentesque nisl, eu hendrerit nisl. Interdum et malesuada fames ac ante ipsum primis in faucibus."),
+      h3("Administering the Survey"),
+      p("Nam a risus eget est bibendum luctus ut at sem. Donec nec quam hendrerit, eleifend purus eget, posuere quam. Cras non ex vitae arcu pretium posuer"),
+      h3("Results"),
+      p("Nam a risus eget est bibendum luctus ut at sem. Donec nec quam hendrerit, eleifend purus eget, posuere quam. Cras non ex vitae arcu pretium posuer"),
+      h3("Conclusion"),
+      p("Nam a risus eget est bibendum luctus ut at sem. Donec nec quam hendrerit, eleifend purus eget, posuere quam. Cras non ex vitae arcu pretium posuer"),
+       )
   ),
     tabPanel(
       "Build-a-Graph",
@@ -121,7 +129,7 @@ In the top graph, when looking at the values for the 'No' response, female (the 
             "variable",
             label = tags$span(
               "Select variable", bsButton("v", label = "", icon = icon("info"), style = "info", size = "extra-small")),
-            choices = c("gender", "race", "first_gen", "international", "major", "prepared", "none"),
+            choices = variable_options,
             multiple = FALSE,
           ),  bsPopover(
             id = "v",
