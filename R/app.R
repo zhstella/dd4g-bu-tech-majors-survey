@@ -7,7 +7,6 @@ library(shinyalert)
 
 source("setup_data_frames.R")
 
-print("done")
 
 
 ui <- fluidPage(
@@ -149,13 +148,13 @@ In the top graph, when looking at the values for the 'No' response, female (the 
   imageOutput("photo", height = "1%", width = "1%")
 
 )
-print("d1")
+
 
 server <- function(input, output, session) {
   observeEvent(input$help, {
     #updateTabsetPanel(session, "inTabset",
            #           selected = "panel1")
-    shinyalert("\n \n How to read the graphs", "1. Top Graph
+    shinyalert("How to read the graphs", "1. Top Graph
 When a variable is not selected (or 'none' selected), the top graph, ‘count’, displays the total number of students that selected each response. When a variable is selected, the responses will be broken down by the selected variable. This means if the variable ‘gender’ is selected, the values in this graph will show the number of self-identified female students, self-identified male students, etc. that selected each response.
 2. Bottom Graph
 When a variable is not selected (or 'none' selected), the bottom graph, ‘prop’, displays the total number of students that selected each response, in proportion to the total number of students that responded to the question. When a variable is selected, the responses will be broken down by the selected variable. This means if the variable ‘gender’ is selected, the values in this graph will show the number of self-identified-female students, self-identified male students, etc. that selected each response, in proportion to the total number of self-identified female students, self-identified male students etc. that responded to the question.
@@ -165,7 +164,7 @@ In the top graph, when looking at the values for the 'No' response, female has a
 
 Please return to the Welcome tab and scroll down to the, 'How do I use Build-a-Graph?' section if you'd like to see this example with the actual graph.
 
-", size = "m")
+", size = "l")
 
   })
 
@@ -302,6 +301,5 @@ Please return to the Welcome tab and scroll down to the, 'How do I use Build-a-G
 }
 
 
-print("d2")
 shinyApp(ui = ui, server = server)
 
