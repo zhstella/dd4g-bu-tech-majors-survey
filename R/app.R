@@ -59,7 +59,8 @@ ui <- fluidPage(
       strong("Example: "),
       p("The graph below is the data for the question, 'Have you ever experienced discrimination or disrespectful/inappropriate behavior in your major department?' and the gender variable is selected.
 In the top graph, when looking at the values for the 'No' response, female (the red bar) has a value of 110. This means 110 self-identified female students responded No. In the bottom graph, when looking at the values for the 'No' response, female (the red bar) has a value of 64%. This means 64% of all self-identified female students responded No."),
-      imageOutput("photo1", height = "50%", width = "50%")),
+      column(6, imageOutput("photo1", height = "50%", width = "50%"), align = "center")
+      ),
 
 
 
