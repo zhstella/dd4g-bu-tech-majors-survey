@@ -63,7 +63,6 @@ In the top graph, when looking at the values for the 'No' response, female (the 
       ),
 
 
-
   ),
   tabPanel(
     "Survey Report",
@@ -83,7 +82,7 @@ In the top graph, when looking at the values for the 'No' response, female (the 
       p("We believe a collective goal of the computing department leaders, faculty, staff, and Boston University, is to create a substantial and successful learning environment for all students. In order to do that, we need to truly understand the current state of the environment and how students are feeling. This was the main purpose of the climate survey. We wanted to better understand student experiences which would allow us to better capture what is currently working and what is not working within computing fields at BU. We also wanted to discover whether there were any unorthodox differences between student experiences and what could possibly be creating those disparities. This is a very important piece to this research since as BU and tech in particular continues to grow and become more diverse, we need to make sure that these spaces are equitable. We hope that our findings can be of use to others who are willing and able to work on projects related to bettering student outcomes and other DEI related goals.
 "),
       h4("BU Demographics Data"),
-      p("TBD"),
+      p("TBA"),
       h3("Objectives"),
       p("What are overall experiences of students within technology groups of computing, data & computational sciences, math & stats, and engineering at BU?"),
       tags$li("What are their experiences like with professors, peers, departments, and the broader BU community?
