@@ -124,6 +124,18 @@ dis_ldf <- ddf_s %>%
 race_q <- original_question_df %>%
   filter(question_id == "Q7")
 
+gender_q <- original_question_df %>%
+  filter(question_id == "Q6")
+
+firstgen_q <- original_question_df %>%
+  filter(question_id == "Q4")
+
+major_q <- original_question_df %>%
+  filter(question_id == "Q1")
+
+international_q <- original_question_df %>%
+  filter(question_id == "Q5")
+
 race_ldf <- ddf_s %>%
   pivot_longer(
     cols = "race",
@@ -132,6 +144,42 @@ race_ldf <- ddf_s %>%
     values_drop_na = TRUE
   ) %>%
   left_join(race_q, by = "question_id")
+
+gender_ldf <- ddf_s %>%
+  pivot_longer(
+    cols = "gender",
+    names_to = "question_id",
+    values_to = "response",
+    values_drop_na = TRUE
+  ) %>%
+  left_join(gender_q, by = "question_id")
+
+firstgen_ldf <- ddf_s %>%
+  pivot_longer(
+    cols = "first_gen",
+    names_to = "question_id",
+    values_to = "response",
+    values_drop_na = TRUE
+  ) %>%
+  left_join(firstgen_q, by = "question_id")
+
+major_ldf <- ddf_s %>%
+  pivot_longer(
+    cols = "major",
+    names_to = "question_id",
+    values_to = "response",
+    values_drop_na = TRUE
+  ) %>%
+  left_join(firstgen_q, by = "question_id")
+
+international_ldf <- ddf_s %>%
+  pivot_longer(
+    cols = "international",
+    names_to = "question_id",
+    values_to = "response",
+    values_drop_na = TRUE
+  ) %>%
+  left_join(firstgen_q, by = "question_id")
 
 
 discrimination_q_tbl <-
