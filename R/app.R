@@ -9,8 +9,8 @@ library(gt)
 source("setup_data_frames.R")
 
 
-variable_options <- c("gender", "race", "first_gen", "international", "major", "prepared", "none")
-names(variable_options) <- c("Gender", "Race", "First Gen", "International", "Major", "Preparedness", "None")
+variable_options <- c("gender", "race", "first_gen", "international", "major", "none")
+names(variable_options) <- c("Gender", "Race", "First Gen", "International", "Major", "None")
 
 ui <- fluidPage(
   useShinyjs(),
@@ -51,6 +51,7 @@ ui <- fluidPage(
         tags$li("Choose the particular question of interest"),
         tags$li("To view breakdowns of the selected question by demographic attributes, identify the variable of interest")
       ),
+
       strong("How to Read the Graphs"),
       tags$ol(
         tags$li("When a variable is not selected (or 'none' selected), the top graph, ‘count’, displays the total number of students that selected each response. When a variable is selected, the responses will be broken down by the selected variable. This means if the variable ‘gender’ is selected, the values in this graph will show the number of self-identified female students, self-identified male students, etc. that selected each response."),
