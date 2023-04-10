@@ -243,7 +243,8 @@ experiences or observations of discrimination. These questions were:
 
   )),
   hr(),
-  imageOutput("photo", height = "1%", width = "1%")
+  imageOutput("photo", height = "1%", width = "1%"),
+  HTML("<p >Copyright	2023 &copy; by DEI Tech Collective</p>")
 
 )
 
