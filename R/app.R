@@ -9,8 +9,8 @@ library(gt)
 source("setup_data_frames.R")
 
 
-variable_options <- c("gender", "race", "first_gen", "international", "major", "none")
-names(variable_options) <- c("Gender", "Race", "First Gen", "International", "Major", "None")
+variable_options <- c("gender", "race", "first_gen", "international", "major", "prepared", "Q21", "none")
+names(variable_options) <- c("Gender", "Race", "First Gen", "International", "Major", "Preparedness", "Work Status", "None")
 
 ui <- fluidPage(
   useShinyjs(),
@@ -30,7 +30,7 @@ ui <- fluidPage(
           href = "https://sites.bu.edu/dei-in-tech/")),
       hr(),
       h3("What is the DEI in Tech Climate Survey?"),
-      p("	The survey was administered in the Spring of 2022 by the BU DEI Tech Collective. The purpose of this survey was to assess the climate of tech departments at Boston University and begin to fill that data gap. This survey was intended for students in Computer Science, Math and Stats, Computing and Data Science, Information Systems, and Computer Engineering. The survey was modeled after already existing climate surveys from various institutions, including the University of Michigan Computer Science and Engineering Climate, Diversity, Equity, and Inclusion Assessment and assessments from the Computing Research Association.
+      p("	The DEI in Tech Climate Survey was curated by Shateva Long (CAS '23) and was administered in the Spring of 2022 by the BU DEI Tech Collective. The purpose of this survey was to assess the climate of tech departments at Boston University and begin to fill that data gap. This survey was intended for students in Computer Science, Math and Stats, Computing and Data Science, Information Systems, and Computer Engineering. The survey was modeled after already existing climate surveys from various institutions, including the University of Michigan Computer Science and Engineering Climate, Diversity, Equity, and Inclusion Assessment and assessments from the Computing Research Association.
 
 "),
       h3("What can I do on this site?"),
@@ -68,12 +68,12 @@ In the top graph, when looking at the values for the 'No' response, female (the 
   tabPanel(
     "Survey Report",
     mainPanel(style = "margin-left: 13%; margin-right: 15%; width: 75%",
-      h1("Survey Report"),
+      h1(style = "text-align: center", "Survey Report"),
       p("Thank you for your interest in the DEI in Tech Student Climate Survey. This campaign was motivated by the need to better understand student experiences in tech related departments at BU in an effort to inform areas for change and improvement. Please read on to learn more.
 "),
       hr(),
       h3("Executive Summary"),
-      p("The DEI in Tech Student Climate Survey was administered in the Fall of 2021 through the Spring of 2022 by the BU DEI Tech Collective. The purpose of this survey was to assess the climate of tech departments at Boston University and begin to fill that data gap. Areas across the university are determining new goals and policies to address inequity, and the data gathered here is meant to contribute to the evidence based formation of effective initiatives.
+      p("The purpose of the DEI in Tech Climate Survey was to assess the climate of tech departments at Boston University and begin to fill that data gap. Areas across the university are determining new goals and policies to address inequity, and the data gathered here is meant to contribute to the evidence based formation of effective initiatives.
 "),
       p("This report provides overviews of the survey background and methods. Some BU student population data is shared for context, as well as an outline of the 632 respondent demographics to shed light on the types of students who participated. The segments following include explanations of survey sections, and associated examples and general analysis of results. More detailed data results for each part of the survey can be compiled on the interactive “Build-a-Graph” tab.
 "),

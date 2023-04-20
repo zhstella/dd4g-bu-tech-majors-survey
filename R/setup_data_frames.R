@@ -205,3 +205,16 @@ dep_tbl <-
       subsection_title = "Satisfaction",
       which_df = "course"
     )
+
+misc_q <- original_question_df %>%
+  filter(
+    str_detect(question_text, "Did you feel prepared for college level courses")
+  )
+
+misc_ldf <- ddf_s %>%
+  pivot_longer(
+    cols = adjectives_q$question_id,
+    names_to = "question_id",
+    values_to = "response",
+    values_drop_na = TRUE
+  )
