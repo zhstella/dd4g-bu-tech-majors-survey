@@ -9,7 +9,7 @@ library(gt)
 source("setup_data_frames.R")
 
 
-variable_options <- c("gender", "race", "first_gen", "international", "major", "prepared", "Q21", "none")
+variable_options <- c("gender", "race", "first_gen", "international", "major", "Q10", "Q21", "none")
 names(variable_options) <- c("Gender", "Race", "First Gen", "International", "Major", "Preparedness", "Work Status", "None")
 
 ui <- fluidPage(
@@ -181,7 +181,7 @@ experiences or observations of discrimination. These questions were:
             "qtype",
             label = tags$span(
               "Select question type", bsButton("q", label = "", icon = icon("info"), style = "info", size = "extra-small")),
-            choices = c("Agreement", "Adjectives", "Course Satisfaction", "Discrimination"),
+            choices = c("Agreement", "Adjectives", "Course Satisfaction", "Discrimination", "Miscellaneous"),
             multiple = FALSE,
             selected = "Agreement"
           ),  bsPopover(
@@ -300,6 +300,12 @@ Please return to the Welcome tab and scroll down to the, 'How do I use Build-a-G
                         label = "Select adjectives to compare",
       )
     }
+    if(input$qtype == "Miscellaneous"){
+      updateSelectInput(session, "question",
+                        choices = unique(misc_q$question_text),
+                        label = "Select specific question",
+      )
+    }
     if(input$qtype == "Discrimination"){
       updateSelectInput(session, "question",
                         choices = unique(discrimination_q_tbl$selected_q),
@@ -341,6 +347,9 @@ Please return to the Welcome tab and scroll down to the, 'How do I use Build-a-G
       }else if (input$qtype == "Agreement"){
         cdf = agreement_ldf
         graphTitle = paste("Survey Prompt: Please indicate your level of agreement with the following statement:\n", input$question)
+      }else if (input$qtype == "Miscellaneous"){
+        cdf = misc_ldf
+        graphTitle = paste("Survey Prompt: ", input$question)
       }else if (input$qtype == "Discrimination"){
         cdf = dis_ldf
         if (str_detect(input$question, "experienced")){
@@ -353,10 +362,40 @@ Please return to the Welcome tab and scroll down to the, 'How do I use Build-a-G
         cdf = course_ldf
         graphTitle = paste("This data represents the overall course satisfaction for all",input$question, "courses.")
       }
-      select_df <-
-        cdf %>%
-        filter(str_detect(question_text, str_escape(input$question)))
-      any_response <- nrow(select_df) > 0
+
+
+      if (input$qtype == "Miscellaneous"){
+        if (input$variable == "none"){
+          select_df <-
+            cdf %>%
+            filter(str_detect(question_text, str_escape(input$question)))
+          any_response <- nrow(select_df) > 0
+
+          rdf <- select_df %>%
+            count_prop_complete()
+
+          rdf %>%
+            ggplot(aes(x = response)) %>%
+            stack_freq_prop("")
+        }else{
+          select_df <-
+            cdf %>%
+            filter(str_detect(question_text, str_escape(input$question)))
+          any_response <- nrow(select_df) > 0
+
+          rdf <- select_df %>%
+            count_prop_complete(.data[[var]])
+
+          rdf %>%
+            ggplot(aes(x = response, fill = .data[[var]], group = .data[[var]])) %>%
+            stack_freq_prop(title = graphTitle)
+        }
+
+      }else{
+        select_df <-
+          cdf %>%
+          filter(str_detect(question_text, str_escape(input$question)))
+        any_response <- nrow(select_df) > 0
 
       if (var == "none"){
         rdf <- select_df %>%
@@ -372,6 +411,7 @@ Please return to the Welcome tab and scroll down to the, 'How do I use Build-a-G
         rdf %>%
           ggplot(aes(x = response, fill = .data[[var]], group = .data[[var]])) %>%
           stack_freq_prop(title = graphTitle)
+      }
       }
     },
     height = 600

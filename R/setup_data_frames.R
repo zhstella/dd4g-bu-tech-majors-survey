@@ -206,15 +206,16 @@ dep_tbl <-
       which_df = "course"
     )
 
-misc_q <- original_question_df %>%
-  filter(
-    str_detect(question_text, "Did you feel prepared for college level courses")
-  )
+misc_q <-
+  original_question_df %>%
+  filter(question_id == "Q10" | question_id == "Q19" | question_id == "Q21" | question_id == "Q17" )
+
 
 misc_ldf <- ddf_s %>%
   pivot_longer(
-    cols = adjectives_q$question_id,
+    cols = misc_q$question_id,
     names_to = "question_id",
     values_to = "response",
     values_drop_na = TRUE
-  )
+  ) %>%
+  left_join(misc_q, by = "question_id")
