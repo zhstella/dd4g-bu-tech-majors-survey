@@ -38,8 +38,7 @@ ddf <- ddf %>%
     race = Q7,
     race_other_txt = Q7_8_TEXT,
     pronouns = Q8,
-    pronouns_other_txt = Q8_15_TEXT,
-    options = Q9
+    pronouns_other_txt = Q8_15_TEXT
   )
 save(ddf, file = "R/ddf.rda")
 
