@@ -323,39 +323,46 @@ ccd <- course_count_df |>
 # 4 Somewhat satisfied                 CAS CS CAS CS111 Lower    53
 # 5 Extremely satisfied                CAS CS CAS CS111 Lower   118
 pred_course <- function(ccd, fit_tbl_long){
-  fit_tbl_long_response <- fit_tbl_long |> filter(type == "response")
   ccd_groups <- group_vars(ccd)
+  fit_vars <- setdiff(unique(fit_tbl_long$type), c("response", NA))
   ccd_id <- ccd |> 
     ungroup()|>
     mutate(
-      across(-n, as.character),
-      count_id = row_number()
+      across(c(any_of(fit_vars), response), as.character),
     ) |> 
-    mutate(gid = cur_group_id(), .by = -c(response, count_id, n)) 
+    mutate(gid = cur_group_id(), .by = any_of(fit_vars))
   ccd_id |>
-    pivot_longer(-c(count_id, n, gid), names_to = "type", values_to = "name") |> 
+    select(any_of(fit_vars), response, gid) |> 
+    nest(r = response) |> 
+    pivot_longer(-c(gid, r), names_to = "type", values_to = "name") |> 
     left_join(fit_tbl_long, join_by(type, name), relationship = "many-to-many") |> 
     select(-stan_param) |> 
-    group_by(mc_id, gid, count_id) |> 
-    mutate(value = if_else(type == "response", value, -value)) |> 
-    summarize(value = sum(value, na.rm = TRUE), .groups = "drop_last") |> 
-    left_join(ccd_id, by = join_by(gid, count_id)) |> 
+    group_by(mc_id, gid, r) |> 
+    summarize(offset = sum(value, na.rm = TRUE), .groups = "drop_last") |> 
+    unnest(r) |> 
+    left_join(
+      fit_tbl_long |> filter(type == "response") |> select(-type, -stan_param),
+      by = join_by(response == name, mc_id)
+    ) |> 
+    mutate(value = value - offset) |> 
+    left_join(ccd_id, by = join_by(gid, response)) |> 
     mutate(response = ordered(response, levels = satisfaction_level)) |> 
-    arrange(gid, mc_id, response) |> 
+    arrange(mc_id, gid, response) |> 
     mutate(p = plogis(value) - plogis(lag(value, default = -Inf))) |> 
     ungroup() |> 
-    select(-count_id, -gid) |> 
+    select(-gid, -offset, -value) |> 
     group_by(pick(all_of(ccd_groups)), mc_id)
 }
 
-ccd <- course_count_df |> 
+ccd <- course_count_df |>
+  filter(dept == "CAS MA" & level == "Lower") |> 
   group_by(pick(-c(course, n))) |>
   summarize(course = "NA") |>
   bind_rows(course_count_df) |> 
   filter(
-    course == "CAS CS111" | 
-      (dept == "CAS CS" & course == "NA" & level == "Lower")
-  )
+    course == "CAS MA 225" | course == "NA"
+  ) |> 
+  group_by(dept, course)
   
 ccd_pred <- ccd |> 
   pred_course(fit_tbl_long)
@@ -364,8 +371,8 @@ ccd_pred |>
   group_by(mc_id, .add = TRUE) |> 
   mutate(pobs = n / sum(n)) |> 
   ggplot(aes(x = response, color = course)) +
-  stat_summary(aes(y = pobs), geom = "col", fun.y = mean, data = \(d) filter(d, !is.na(pobs))) +
-  stat_summary(aes(y = p), fun.data = mean_sdl)
+  stat_summary(aes(y = pobs), geom = "col", fun.y = mean, position = "dodge") +
+  stat_summary(aes(y = p), fun.data = mean_sdl, position = position_dodge(1))
 ```
 
 ```{r}
