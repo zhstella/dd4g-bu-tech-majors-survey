@@ -35,8 +35,8 @@ data {
   int<lower=1, upper=L> level[N];     // Vector of level indicators
   
   int<lower=1> K;                     // Number of courses
-  int<lower=1, upper=D> course_dept[K];
-  int<lower=1, upper=D> course_level[K];
+  int<lower=1, upper=D> course_dept[K]; // Department for each course
+  int<lower=1, upper=D> course_level[K]; // Level for each course
   int<lower=1, upper=K> course[N];    // Vector of course indicators
   
   cov_matrix[K] course_cov;
@@ -47,10 +47,11 @@ data {
 }
 
 parameters {
-  // vector[D] dept_offset;      // Department level offset
+  vector[D] dept_offset;      // Department level offset
   vector[L-1] level_offset_raw;     // Level level offset
-  vector[K] course_offset_raw;  // course level offset
-  // real<lower=0> sigma_dept;   // Standard deviation of department offsets
+  vector[K] course_offset;  // course level offset
+  real<lower=0> sigma_dept;
+  // real<lower=0> sigma_dept_course[D];   // Standard deviation of department offsets
   real<lower=0> sigma_level;  // Standard deviation of level offsets
   real<lower=0> sigma_course; // Standard deviation of course offsets
   ordered[C - 1] c;
@@ -69,10 +70,10 @@ transformed parameters {
   // dept_offset[2:D] = dept_offset_raw;
   // dept_offset[1] = -sum(dept_offset_raw);
   
-  vector[K] course_offset;
+  vector[K] course_offset_composite;
   for (k in 1:K){
-     course_offset[k] = course_offset_raw[k] +
-       // dept_offset[course_dept[k]] +
+     course_offset_composite[k] = course_offset[k] +
+       dept_offset[course_dept[k]] +
        level_offset[course_level[k]];
   }
 }
@@ -83,20 +84,18 @@ model {
     // dept_offset_raw[d] ~ normal(0, sigma_dept);
   // }
   
-  // dept_offset ~ multi_normal(dept_mu, sigma_dept * dept_cov);
-  for (l in 1:(L-1)){
-    level_offset_raw[l] ~ normal(0, sigma_level);
-  }
-  course_offset_raw ~ multi_normal(course_mu, sigma_course * course_cov);
+  dept_offset ~ multi_normal(dept_mu, sigma_dept * dept_cov);
+  level_offset_raw ~ normal(0, sigma_level);
+  course_offset ~ multi_normal(course_mu, sigma_course * course_cov);
   
-  // sigma_dept ~ cauchy(0, 1);
+  sigma_dept ~ cauchy(0, 1);
+  // sigma_dept_course ~ cauchy(0, 1);
   sigma_level ~ cauchy(0, 1);
   sigma_course ~ cauchy(0, 1);
 
   // Likelihood
   for (n in 1:N) {
-    real theta = course_offset[course[n]];
-       // level_offset[level[n]] +  dept_offset[dept[n]] + 
+    real theta = course_offset_composite[course[n]];
     response[n] ~ ordered_logistic(theta, c);
   }
 }
@@ -107,7 +106,7 @@ model {
 source(here::here("R/source_all.R"))
 ```
 
-```{r setup_course_ldf}
+```{r setup_course_ldf_orig}
 ddf_s <- ddf %>%
   mutate(
     gender = as_factor(ifelse(
@@ -156,15 +155,12 @@ course_ldf_orig <- ddf_s %>%
   select(response, course_orig = question_text)
 ```
 
-```{r}
+```{r setup_course_ldf}
 course_ldf <- course_ldf_orig %>%
   mutate(
     dept_orig = str_sub(course_orig, end = 6),
     level_orig = as.integer(str_extract(course_orig, "\\d"))
-  )
-
-
-course_ldf <- course_ldf %>% 
+  ) %>% 
   mutate(
     dept = fct_lump_min(dept_orig, min = 100),
     course = fct_lump_min(course_orig, min = 20),
@@ -180,112 +176,342 @@ course_ldf <- course_ldf %>%
   ) %>%
   select(-w) %>%
   filter(course != "Other")
-course_ldf %>% 
-  count(level, dept, course) %>% 
-  arrange(n) %>% 
-  print() %>% 
-  count(level, dept) %>% 
-  arrange(n)
 ```
-
 
 ```{r stan_param}
-to_int <- function(.) as.integer(as_factor(.))
-  # int<lower=1> N;                     // Number of observations
-N <- nrow(course_ldf)
-
-  # int<lower=1> C;                     // Number of response levels
-  # int<lower=1, upper=C> response[N];  // Vector of responses
-C <- nlevels(course_ldf$response)
-response <- as.integer(course_ldf$response)
-
-  # int<lower=1> D;                     // Number of departments
-  # int<lower=1, upper=D> dept[N];      // Vector of department indicators
-dept <- to_int(course_ldf$dept)
-D <- max(dept)
-dept_mu <- rep(0, D)
-dept_cov <- diag(1 + 1.001 / (D-1), D) - 1 / (D-1)
-
-  # int<lower=1> L;                     // Number of course levels
-  # int<lower=1, upper=L> level[N];     // Vector of level indicators
-level <- to_int(course_ldf$level)
-L <- max(level)
+make_sampling_data <- function(course_ldf) {
+  to_int <- function(.) as.integer(as_factor(.))
+  zero_sample_mean_cov <- function(k, epsilon = 0.0001){ 
+    diag(1  + (1 - epsilon) / (k - 1), k) - (1 - epsilon) / (k - 1)
+  }
+    # int<lower=1> N;                     // Number of observations
+  N <- nrow(course_ldf)
   
-  # int<lower=1> K;                     // Number of courses
-  # int<lower=1, upper=K> course[N];    // Vector of course indicators
-course_dept <- course_ldf %>%
-  distinct(course, dept) %>%
-  arrange(course) %>% 
-  pull(dept) %>% 
-  to_int()
+    # int<lower=1> C;                     // Number of response levels
+    # int<lower=1, upper=C> response[N];  // Vector of responses
+  C <- nlevels(course_ldf$response)
+  response <- as.integer(course_ldf$response)
+  
+    # int<lower=1> D;                     // Number of departments
+    # int<lower=1, upper=D> dept[N];      // Vector of department indicators
+  dept <- to_int(course_ldf$dept)
+  
+  
+  D <- max(dept)
+  dept_mu <- rep(0, D)
+  dept_cov <- zero_sample_mean_cov(D)
+  
+    # int<lower=1> L;                     // Number of course levels
+    # int<lower=1, upper=L> level[N];     // Vector of level indicators
+  level <- to_int(course_ldf$level)
+  L <- max(level)
+    
+    # int<lower=1> K;                     // Number of courses
+    # int<lower=1, upper=K> course[N];    // Vector of course indicators
+  course_dept <- course_ldf %>%
+    distinct(course, dept) %>%
+    arrange(course) %>% 
+    pull(dept) %>% 
+    to_int()
+  
+  course_level <- course_ldf %>%
+    distinct(course, level) %>%
+    arrange(course) %>% 
+    pull(level) %>% 
+    to_int()
+  
+  course <- to_int(course_ldf$course)
+  K <- max(course)
+  course_mu <- rep(0, K)
+  course_cov <- reduce(
+    unique(course_dept),
+    function(cv, d){
+      cdl <- course_dept == d
+      nc <- sum(cdl)
+      cv[cdl, cdl] <-  zero_sample_mean_cov(nc)
+      cv
+    },
+    .init = matrix(0, K, K)
+  )
+  list(
+    N = N,
+    C = C,
+    response = response,
+    D = D,
+    dept = dept,
+    dept_cov = dept_cov,
+    dept_mu = dept_mu,
+    L = L,
+    level = level,
+    K = K,
+    course = course,
+    course_dept = course_dept,
+    course_level = course_level,
+    course_cov = course_cov,
+    course_mu = course_mu
+  )
+}
 
-course_level <- course_ldf %>%
-  distinct(course, level) %>%
-  arrange(course) %>% 
-  pull(level) %>% 
-  to_int()
-
-course <- to_int(course_ldf$course)
-K <- max(course)
-course_mu <- rep(0, K)
-course_cov <- diag(1 + 1.001 / (K-1), K) - 1 / (K-1)
-
-
-sampling_data <- 
-    list(
-      N = N,
-      C = C,
-      response = response,
-      D = D,
-      dept = dept,
-      dept_cov = dept_cov,
-      dept_mu = dept_mu,
-      L = L,
-      level = level,
-      K = K,
-      course = course,
-      course_dept = course_dept,
-      course_level = course_level,
-      course_cov = course_cov,
-      course_mu = course_mu
-    )
+sampling_data <- make_sampling_data(course_ldf)
 ```
 
+```{r stan_name_tibble}
+make_stan_name_table <- function(var, s_data = sampling_data, cldf = course_ldf){
+  tibble(num = s_data[[var]], name = cldf[[var]]) |> 
+    distinct() |> 
+    mutate(stan_param = str_glue("{var}_offset[{num}]"), type = var) |> 
+    arrange(num) |> 
+    mutate(name = fct_reorder(name, row_number())) |> 
+    select(-num)
+}
 
-```{r}
+stan_name_tbl <- 
+  map(c("course", "dept", "level"), make_stan_name_table) |> 
+  list_rbind() |> 
+  bind_rows(
+    tibble(
+      name = satisfaction_level, 
+      stan_param = str_glue("c[{num}]", num = seq_along(satisfaction_level)),
+      type = "response"
+    )
+  )
+```
+
+```{r stan_sample}
 sat_model_fit <- sampling(
   stan_sat_model,
   sampling_data,
   chains = 4,
   iter = 3000
 )
+save(sat_model_fit, file = "stan/sat_model_fit.RData")
+```
+
+```{r}
+load("sat_model_fit.RData")
 ```
 
 
 ```{r}
-fit_tbl <- as_tibble(as.data.frame(sat_model_fit))
+fit_tbl <- as_tibble(as.data.frame(sat_model_fit)) |> 
+  mutate(mc_id = row_number(), .before = 1)
+
+fit_tbl_long <- fit_tbl |> 
+  mutate(`c[5]` = Inf) |> 
+  pivot_longer(-mc_id, names_to = "stan_param") |> 
+  left_join(stan_name_tbl, "stan_param")
+
+
+
+course_count_df <- course_ldf |>
+  select(-contains("orig")) |> 
+  count(pick(everything()))
+
+
+
+ccd <- course_count_df |>
+  filter(course == "CAS CS111")
+
+
+# ccd should look like
+# # A tibble: 5 × 5
+#   response                           dept   course    level     n
+#   <ord>                              <fct>  <fct>     <chr> <int>
+# 1 Extremely dissatisfied             CAS CS CAS CS111 Lower     1
+# 2 Somewhat dissatisfied              CAS CS CAS CS111 Lower     5
+# 3 Neither satisfied nor dissatisfied CAS CS CAS CS111 Lower     7
+# 4 Somewhat satisfied                 CAS CS CAS CS111 Lower    53
+# 5 Extremely satisfied                CAS CS CAS CS111 Lower   118
+pred_course <- function(ccd, fit_tbl_long){
+  fit_tbl_long_response <- fit_tbl_long |> filter(type == "response")
+  ccd_groups <- group_vars(ccd)
+  ccd_id <- ccd |> 
+    ungroup()|>
+    mutate(
+      across(-n, as.character),
+      count_id = row_number()
+    ) |> 
+    mutate(gid = cur_group_id(), .by = -c(response, count_id, n)) 
+  ccd_id |>
+    pivot_longer(-c(count_id, n, gid), names_to = "type", values_to = "name") |> 
+    left_join(fit_tbl_long, join_by(type, name), relationship = "many-to-many") |> 
+    select(-stan_param) |> 
+    group_by(mc_id, gid, count_id) |> 
+    mutate(value = if_else(type == "response", value, -value)) |> 
+    summarize(value = sum(value, na.rm = TRUE), .groups = "drop_last") |> 
+    left_join(ccd_id, by = join_by(gid, count_id)) |> 
+    mutate(response = ordered(response, levels = satisfaction_level)) |> 
+    arrange(gid, mc_id, response) |> 
+    mutate(p = plogis(value) - plogis(lag(value, default = -Inf))) |> 
+    ungroup() |> 
+    select(-count_id, -gid) |> 
+    group_by(pick(all_of(ccd_groups)), mc_id)
+}
+
+ccd <- course_count_df |> 
+  group_by(pick(-c(course, n))) |>
+  summarize(course = "NA") |>
+  bind_rows(course_count_df) |> 
+  filter(
+    course == "CAS CS111" | 
+      (dept == "CAS CS" & course == "NA" & level == "Lower")
+  )
+  
+ccd_pred <- ccd |> 
+  pred_course(fit_tbl_long)
+
+ccd_pred |> 
+  group_by(mc_id, .add = TRUE) |> 
+  mutate(pobs = n / sum(n)) |> 
+  ggplot(aes(x = response, color = course)) +
+  stat_summary(aes(y = pobs), geom = "col", fun.y = mean, data = \(d) filter(d, !is.na(pobs))) +
+  stat_summary(aes(y = p), fun.data = mean_sdl)
+```
+
+```{r}
+|>
+  mutate(
+    across(-n, as.character),
+    count_id = row_number()
+  ) |>
+  pivot_longer(-c(count_id, n, response), names_to = "type", values_to = "name") |> 
+  left_join(fit_tbl_long, join_by(type, name), relationship = "many-to-many") |> 
+  select(-stan_param) |> 
+  group_by(count_id, mc_id) |> 
+  summarize(value = sum(value, na.rm = TRUE)) |> 
+  left_join()
+  
+
+|> 
+  pivot_wider(
+    names_from = type,
+    names_glue = "{type}_{.value}",
+    values_from = c(name, value)
+  ) 
+
+
+|> 
+  rename_with(\(s) str_remove(s, "_name"), contains("_name")) |> 
+  select(-count_id)
+  
+
+```
+
+
+
+```{r diagnostic}
+
 cor_mat <- fit_tbl %>% cor()
 (corr_tbl <- as_tibble(cor_mat) %>%
   mutate(v1 = rownames(cor_mat)) %>% 
   pivot_longer(-v1, names_to = "v2", values_to = "cor") %>%
   # filter(is.na(cor)) %>% 
   filter(v1 < v2) %>%
-  filter(!str_detect(str_c(v1,v2), "((_)\\[|lp_)"), !is.na(cor)) %>%
+  filter(!str_detect(str_c(v1,v2), "((raw|composite|_)\\[|lp_)"), !is.na(cor)) %>%
   arrange(-cor))
-corr_tbl %>% ggplot(aes(x = v1, y=v2, fill = cor)) + geom_tile() + scale_fill_gradient2()
-
-
-fit_tbl %>% ggplot(aes(x = `c[3]`, y = `c[4]`))+geom_point(alpha = .333)
-
-course_ldf %>% count(course)
+corr_tbl %>% ggplot(aes(x = v1, y=v2, fill = cor)) + geom_tile() + geom_tile(aes(x = v2, y=v1)) + scale_fill_gradient2() + scale_y_discrete(limits = rev)
 ```
-    
+
 ```{r}
-sat_model_sum <- sat_model_fit %>% summary() %>% as.data.frame() %>% as_tibble() %>% mutate(var = names(sat_model_fit), .before = 1)
-sat_model_sum %>% select(var, summary.n_eff, summary.Rhat) %>% View
+rename_stan_to_orig <- function(., stan_name_tbl){
+  tibble(stan_param = .) %>%
+    left_join(stan_name_tbl, by = "stan_param") %>% 
+    mutate(n = ifelse(is.na(name), stan_param, as.character(name))) %>%
+    pull(n)
+}
+
+course_fit_tbl <- 
+  fit_tbl %>% 
+  pivot_longer(contains("composite["), names_to = "course", values_to = "course_param") %>%
+  select(-matches("(offset)|(lp__)|(sigma)")) %>%
+  rename_with(rename_stan_to_orig, stan_name_tbl = stan_name_tbl) %>% 
+  left_join(stan_name_tbl, by = c("course" = "stan_param"))
+
+
+predict_course <- function(course_ldf, param){
+  course_param %>%
+    filter(name %in% course_name) %>%
+    mutate(across(contains("c\\["), ~. + course_param))
+}
+```
+  
+```{r fit_inspect}
+sat_model_sum <- sat_model_fit %>%
+  summary() %>%
+  as.data.frame() %>%
+  as_tibble() %>%
+  mutate(stan_param = names(sat_model_fit), .before = 1) %>% 
+  select(-contains("chain")) %>%
+  rename_with(~str_replace(., "summary", "s")) %>% 
+  left_join(stan_name_tbl, by ="stan_param")
+
+
+sat_model_sum %>%
+  mutate(across(where(is.numeric), ~round(., 2)))
+sat_model_sum %>% select(name, stan_param, s.n_eff, s.Rhat)
+
+sat_model_sum %>%
+  filter(type %in% c("course", "dept")) %>% 
+  ggplot(aes(y = name, x = s.mean, xmin = s.2.5., xmax = s.97.5.)) +
+  geom_pointrange()
+
+
+predict_course <- function(formula = ~ 1, course, param){
+  course_param %>%
+    select(all_of(course)) %>%
+    mutate(across(contains("c\\["), ~. + course_param))
+}
 ```
 
 
 ```{r}
 plot(sat_model_sum, names(sat_model_sum) %>% str_subset("course_offset\\[") %>% head(4))
+```
+
+```{r}
+
+course_count_df <- course_ldf |> 
+  select(response, course, level, dept) |> 
+  count(pick(everything())) |> 
+  mutate(response = str_c("s", as.integer(response))) |>  
+  pivot_wider(names_from = response, values_from = n, values_fill = 0)
+
+fit_tbl_long <- fit_tbl |>
+  pivot_longer(-mc_id) |>
+  right_join(stan_name_tbl, join_by(name == stan_param), suffix = c("_stan", "_orig")) |> 
+  select(mc_id, name = name_orig, value, starts_with("c["))
+
+
+join_mcmc_values <- function(data, p, param = fit_tbl_long){
+  if(!("offset" %in% names(data))){
+    data <- data |> mutate(offset = 0)
+  }
+  data |> 
+    left_join(param, join_by(mc_id, {{ p }} == name)) |> 
+    mutate(offset = offset + ifelse(is.na(value), 0, value)) |>
+    select(-value)
+}
+course_count_df |>
+  group_by(course, level, dept) |>
+  filter(str_detect(course, "CAS MA"))
+
+aaa <- course_count_df |>
+  group_by(course, level, dept) |>
+  filter(str_detect(course, "CAS MA"))  |> 
+  cross_join(fit_tbl |> select(mc_id, starts_with("c["))) |> 
+  join_mcmc_values(course) |> 
+  join_mcmc_values(dept) |> 
+  join_mcmc_values(level) |> 
+  mutate(across(starts_with("c["), \(c_level) offset + c_level), `c[5]` = Inf) |>
+  rename_with(\(s) str_remove_all(s, "\\[|\\]")) |> 
+  pivot_longer(
+    matches("(c|s)\\d"), 
+    names_pattern = "(.)(\\d)",
+    names_to = c(".value", "sat_level")
+  ) |>
+  group_by(mc_id, .add = TRUE) |>
+  mutate(p = plogis(c) - plogis(lag(c, default = -Inf)))
+
+aaa |>
+  ggplot(aes(x = sat_level, y = p, color = course)) +  stat_summary(fun.data = "mean_sdl", geom="pointrange", position = position_dodge(.5))
 ```
