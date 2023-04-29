@@ -208,7 +208,7 @@ dep_tbl <-
 
 misc_q <-
   original_question_df %>%
-  filter(question_id == "Q19" | question_id == "Q21" | question_id == "Q17" | question_id == "Q34" | question_id == "Q9")
+  filter(question_id == "Q19" | question_id == "Q21" | question_id == "Q17" | question_id == "Q34" | question_id == "Q10" | question_id == "Q9")
 
 
 misc_ldf <- ddf_s %>%

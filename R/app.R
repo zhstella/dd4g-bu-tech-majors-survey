@@ -9,7 +9,7 @@ library(gt)
 source("setup_data_frames.R")
 
 
-variable_options <- c("gender", "race", "first_gen", "international", "major", "Q10", "Q21", "none")
+variable_options <- c("gender", "race", "first_gen", "international", "major", "prep", "work_status", "none")
 names(variable_options) <- c("Gender", "Race", "First Gen", "International", "Major", "Preparedness", "Work Status", "None")
 
 ui <- fluidPage(
