@@ -20,7 +20,7 @@ stack_freq_prop <- function(g, title = "Frequency chart") {
 }
 
 
-count_prop_complete <- function(df, ..., .fill = TRUE) {
+count_prop_complete <- function(df, ..., wt = NULL, name = "count", .fill = TRUE) {
   fill_vals <- list(prop = NA, count =  NA)
   if(.fill){
     fill_vals <- list(prop = 0, count = 0)
@@ -46,11 +46,11 @@ count_prop_complete <- function(df, ..., .fill = TRUE) {
    } else if(any(as.character(df$response) %in% frequency_level)){
     df <- df %>% mutate(response = fct_drop(response, only = agreement_level))
    }
-
   df %>%
     group_by(...) %>%
-    count(response, name = "count") %>%
+    count(response, wt = {{ wt }}, name = "count") %>%
     mutate(prop = count / sum(count)) %>%
+    rename_with(\(n)name, count) |>
     ungroup() %>%
     complete(..., response, fill = fill_vals) %>%
     group_by(...)
