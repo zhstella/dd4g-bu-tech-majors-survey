@@ -3,6 +3,8 @@ title: "Stan Model"
 author: "Daniel Sussman"
 date: "2023-03-09"
 output: html_document
+editor_options: 
+  chunk_output_type: console
 ---
 
 ```{r setup, include=FALSE}
@@ -20,87 +22,7 @@ library(rstan)
 options(mc.cores = parallel::detectCores())
 ```
 
-
-```{stan model_from_cgpt, output.var="stan_sat_model"}
-data {
-  int<lower=1> N;                     // Number of observations
-  
-  int<lower=1> C;                     // Number of response levels
-  int<lower=1, upper=C> response[N];  // Vector of responses
-
-  int<lower=1> D;                     // Number of departments
-  int<lower=1, upper=D> dept[N];      // Vector of department indicator
-  
-  int<lower=1> L;                     // Number of course levels
-  int<lower=1, upper=L> level[N];     // Vector of level indicators
-  
-  int<lower=1> K;                     // Number of courses
-  int<lower=1, upper=D> course_dept[K]; // Department for each course
-  int<lower=1, upper=D> course_level[K]; // Level for each course
-  int<lower=1, upper=K> course[N];    // Vector of course indicators
-  
-  cov_matrix[K] course_cov;
-  vector[K] course_mu;
-  
-  cov_matrix[D] dept_cov;
-  vector[D] dept_mu;
-}
-
-parameters {
-  vector[D] dept_offset;      // Department level offset
-  vector[L-1] level_offset_raw;     // Level level offset
-  vector[K] course_offset;  // course level offset
-  real<lower=0> sigma_dept;
-  // real<lower=0> sigma_dept_course[D];   // Standard deviation of department offsets
-  real<lower=0> sigma_level;  // Standard deviation of level offsets
-  real<lower=0> sigma_course; // Standard deviation of course offsets
-  ordered[C - 1] c;
-}
- 
-transformed parameters {
-//  ordered[C - 1] c;
-//  c[2:(C-1)] = c_raw;
-//  c[1] = 0;
-  
-  vector[L] level_offset;
-  level_offset[2:L] = level_offset_raw;
-  level_offset[1] = 0;
-    
-  // vector[D] dept_offset;
-  // dept_offset[2:D] = dept_offset_raw;
-  // dept_offset[1] = -sum(dept_offset_raw);
-  
-  vector[K] course_offset_composite;
-  for (k in 1:K){
-     course_offset_composite[k] = course_offset[k] +
-       dept_offset[course_dept[k]] +
-       level_offset[course_level[k]];
-  }
-}
-
-model {
-  // Priors
-//   for (d in 1:(D-1)){
-    // dept_offset_raw[d] ~ normal(0, sigma_dept);
-  // }
-  
-  dept_offset ~ multi_normal(dept_mu, sigma_dept * dept_cov);
-  level_offset_raw ~ normal(0, sigma_level);
-  course_offset ~ multi_normal(course_mu, sigma_course * course_cov);
-  
-  sigma_dept ~ cauchy(0, 1);
-  // sigma_dept_course ~ cauchy(0, 1);
-  sigma_level ~ cauchy(0, 1);
-  sigma_course ~ cauchy(0, 1);
-
-  // Likelihood
-  for (n in 1:N) {
-    real theta = course_offset_composite[course[n]];
-    response[n] ~ ordered_logistic(theta, c);
-  }
-}
-
-```
+## Data loading and preprocssing
 
 ```{r load_data_and_fns, echo=FALSE}
 source(here::here("R/source_all.R"))
@@ -152,7 +74,7 @@ course_ldf_orig <- ddf_s %>%
        ordered = TRUE
     )
   ) %>% 
-  select(response, course_orig = question_text)
+  select(response, course_orig = question_text, everything())
 ```
 
 ```{r setup_course_ldf}
@@ -175,14 +97,28 @@ course_ldf <- course_ldf_orig %>%
     course = fct_lump_min(course, min = 2, w = w)
   ) %>%
   select(-w) %>%
-  filter(course != "Other")
+  filter(course != "Other") |> 
+  select(response, matches("_orig"), course, dept, level)
 ```
+
+## Stan
+
+
+```{r model_from_cgpt, output.var="stan_sat_model"}
+stan_sat_model <- stan_model("stan/stan.stan", "sat_model")
+# stan_sat_model <- stan("stan/stan.stan")
+```
+
 
 ```{r stan_param}
 make_sampling_data <- function(course_ldf) {
   to_int <- function(.) as.integer(as_factor(.))
   zero_sample_mean_cov <- function(k, epsilon = 0.0001){ 
     diag(1  + (1 - epsilon) / (k - 1), k) - (1 - epsilon) / (k - 1)
+  }
+  zero_sample_mean_chol <- function(k, epsilon = 0){ 
+    t(chol(zero_sample_mean_cov(k, epsilon), pivot = TRUE)[1:(k - 1),]) |> 
+      suppressWarnings()
   }
     # int<lower=1> N;                     // Number of observations
   N <- nrow(course_ldf)
@@ -198,8 +134,7 @@ make_sampling_data <- function(course_ldf) {
   
   
   D <- max(dept)
-  dept_mu <- rep(0, D)
-  dept_cov <- zero_sample_mean_cov(D)
+  dept_chol <- zero_sample_mean_chol(D)
   
     # int<lower=1> L;                     // Number of course levels
     # int<lower=1, upper=L> level[N];     // Vector of level indicators
@@ -222,33 +157,32 @@ make_sampling_data <- function(course_ldf) {
   
   course <- to_int(course_ldf$course)
   K <- max(course)
-  course_mu <- rep(0, K)
-  course_cov <- reduce(
+  course_chol <- reduce(
     unique(course_dept),
     function(cv, d){
       cdl <- course_dept == d
       nc <- sum(cdl)
-      cv[cdl, cdl] <-  zero_sample_mean_cov(nc)
+      cv[cdl, cdl] <- suppressWarnings(chol(zero_sample_mean_cov(nc,0), pivot = T))
       cv
     },
     .init = matrix(0, K, K)
   )
+  last_course <- map_int(unique(course_dept), ~last(which(course_dept == .)))
+  course_chol <- t(course_chol[-last_course,])
   list(
     N = N,
     C = C,
     response = response,
     D = D,
     dept = dept,
-    dept_cov = dept_cov,
-    dept_mu = dept_mu,
+    dept_chol = dept_chol,
     L = L,
     level = level,
     K = K,
     course = course,
     course_dept = course_dept,
     course_level = course_level,
-    course_cov = course_cov,
-    course_mu = course_mu
+    course_chol = course_chol
   )
 }
 
@@ -282,13 +216,19 @@ sat_model_fit <- sampling(
   stan_sat_model,
   sampling_data,
   chains = 4,
-  iter = 3000
+  iter = 2000,
+  init = replicate(
+    4, 
+    list(sigma_dept = atan(1), sigma_course = atan(1), sigma_level = atan(1)), 
+    simplify = FALSE
+  ),
+  control = list(adapt_delta = 0.9)
 )
-save(sat_model_fit, file = "stan/sat_model_fit.RData")
+save(sat_model_fit, file = "stan/sat_model_fit_v0_0_1.RData")
 ```
 
 ```{r}
-load("sat_model_fit.RData")
+load("sat_model_fit_v0_0_1.RData")
 ```
 
 
@@ -332,10 +272,11 @@ pred_course <- function(ccd, fit_tbl_long){
     ) |> 
     mutate(gid = cur_group_id(), .by = any_of(fit_vars))
   ccd_id |>
-    select(any_of(fit_vars), response, gid) |> 
+    select(any_of(fit_vars), response, gid) |>
+    distinct() |> 
     nest(r = response) |> 
     pivot_longer(-c(gid, r), names_to = "type", values_to = "name") |> 
-    left_join(fit_tbl_long, join_by(type, name), relationship = "many-to-many") |> 
+    inner_join(fit_tbl_long, join_by(type, name), relationship = "many-to-many") |> 
     select(-stan_param) |> 
     group_by(mc_id, gid, r) |> 
     summarize(offset = sum(value, na.rm = TRUE), .groups = "drop_last") |> 
@@ -355,12 +296,13 @@ pred_course <- function(ccd, fit_tbl_long){
 }
 
 ccd <- course_count_df |>
-  filter(dept == "CAS MA" & level == "Lower") |> 
+  count_prop_complete(course, dept, level, name = "n") |> 
+  filter(dept == "CAS CS" & level == "Lower") |> 
   group_by(pick(-c(course, n))) |>
   summarize(course = "NA") |>
   bind_rows(course_count_df) |> 
   filter(
-    course == "CAS MA 225" | course == "NA"
+    str_detect(course, "CAS CS11") | course == "NA"
   ) |> 
   group_by(dept, course)
   
@@ -369,8 +311,8 @@ ccd_pred <- ccd |>
 
 ccd_pred |> 
   group_by(mc_id, .add = TRUE) |> 
-  mutate(pobs = n / sum(n)) |> 
-  ggplot(aes(x = response, color = course)) +
+  mutate(pobs = if_else(is.na(n), 0, n / sum(n))) |> 
+  ggplot(aes(x = response, fill = course, group = course)) +
   stat_summary(aes(y = pobs), geom = "col", fun.y = mean, position = "dodge") +
   stat_summary(aes(y = p), fun.data = mean_sdl, position = position_dodge(1))
 ```
@@ -408,15 +350,25 @@ ccd_pred |>
 
 ```{r diagnostic}
 
-cor_mat <- fit_tbl %>% cor()
+cor_mat <- fit_tbl |> 
+  mutate(Chain = rep(1:4, each  = 1500), Iteration = rep(1:1500, 4)) |>
+  left_join(np |> filter(Parameter == "divergent__")) |>
+  filter(Value == 1)  |>
+  select(where(is.numeric)) |> 
+  cor()
 (corr_tbl <- as_tibble(cor_mat) %>%
   mutate(v1 = rownames(cor_mat)) %>% 
   pivot_longer(-v1, names_to = "v2", values_to = "cor") %>%
   # filter(is.na(cor)) %>% 
   filter(v1 < v2) %>%
-  filter(!str_detect(str_c(v1,v2), "((raw|composite|_)\\[|lp_)"), !is.na(cor)) %>%
+  filter(across(c(v1,v2), \(v)str_detect(v, "raw\\[|sigma|lp_")), !is.na(cor)) %>%
   arrange(-cor))
 corr_tbl %>% ggplot(aes(x = v1, y=v2, fill = cor)) + geom_tile() + geom_tile(aes(x = v2, y=v1)) + scale_fill_gradient2() + scale_y_discrete(limits = rev)
+
+np <- nuts_params(sat_model_fit) |> as_tibble()
+np
+
+
 ```
 
 ```{r}
