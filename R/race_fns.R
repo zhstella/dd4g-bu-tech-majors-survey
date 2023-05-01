@@ -33,7 +33,7 @@ add_race_vars <- function(ddf, race_df) {
   }
   ddf %>%
     select(ResponseId, race) %>%
-    full_join(race_df, by = character()) %>%
+    cross_join(race_df) %>%
     mutate(
       is_race = str_detect(race, fixed(race_str))
     ) %>%
