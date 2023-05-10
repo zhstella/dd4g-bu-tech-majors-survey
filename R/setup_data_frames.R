@@ -15,6 +15,19 @@ ddf_s <- ddf %>%
   ) %>%
   simplify_race_var()
 
+
+ddf_s <- ddf_s %>%
+  mutate(
+    Q34 = ifelse(str_detect(Q34, "No"), "No", Q34),
+    Q34 = ifelse(str_detect(Q34, "difficult"), "Yes, because classes are difficult.", Q34),
+    Q34 = ifelse(str_detect(Q34, "interest"), "Yes, because I found a new interest.", Q34),
+    Q34 = ifelse(str_detect(Q34, "Other"), "Other", Q34),
+    Q9 = ifelse(str_detect(Q9, "AP"), "I have taken an AP course related to Math and Computer Science.", Q9),
+    Q9 = ifelse(str_detect(Q9, "never"), "I have never participated in anything related to my major before college.", Q9),
+    Q9 = ifelse(str_detect(Q9, "workshop"), "I have participated in a computer science related project, workshop, or hackathon.", Q9),
+    Q9 = ifelse(str_detect(Q9, "project"), "I have participated in a computer science related project, workshop, or hackathon.", Q9)
+  )
+
 course_num_re <- "[A-Z]{3} [A-Z]{2}\\W*[0-9]{3}"
 course_satisfaction_q <- original_question_df %>%
   filter(
@@ -205,6 +218,9 @@ dep_tbl <-
       subsection_title = "Satisfaction",
       which_df = "course"
     )
+
+
+
 
 misc_q <-
   original_question_df %>%
