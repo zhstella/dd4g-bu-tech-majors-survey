@@ -37,7 +37,7 @@ ui <- fluidPage(
       p("Navigate to the “Survey Report” tab to view the entire Climate Survey Report. This page includes:"),
       tags$li("Additional survey background details"),
       tags$li("BU population data overview"),
-      tags$li("Dispaly of respondent demographics"),
+      tags$li("Display of respondent demographics"),
       tags$li("Explanations of survey sections and accompanying trends"),
       tags$li("Disclaimers and challenges to be aware of"),
       p("\n"),
@@ -49,7 +49,7 @@ ui <- fluidPage(
       tags$ol(
         tags$li("Select a section or question type from the survey"),
         tags$li("Choose the particular question of interest"),
-        tags$li("To view breakdowns of the selected question by demographic attributes, identify the variable of interest")
+        tags$li("To view breakdowns of the selected question by demographic attributes, identify the variable of interest. The variable option 'Preparedness' refers to student responses to the question, 'AFTER you completed your first few STEM courses at BU, do you feel like your high school adequately prepared you for college? Or in other words, once you experienced the difficulty level of college courses, did you feel like your high school prepared you?'. The variable option 'Work Status' refers to student responses to the question, 'Do you have a job?'.")
       ),
 
       strong("How to Read the Graphs"),
@@ -82,8 +82,6 @@ In the top graph, when looking at the values for the 'No' response, female (the 
       h4("Survey Background"),
       p("We believe a collective goal of the computing department leaders, faculty, staff, and Boston University, is to create a substantial and successful learning environment for all students. In order to do that, we need to truly understand the current state of the environment and how students are feeling. This was the main purpose of the climate survey. We wanted to better understand student experiences which would allow us to better capture what is currently working and what is not working within computing fields at BU. We also wanted to discover whether there were any unorthodox differences between student experiences and what could possibly be creating those disparities. This is a very important piece to this research since as BU and tech in particular continues to grow and become more diverse, we need to make sure that these spaces are equitable. We hope that our findings can be of use to others who are willing and able to work on projects related to bettering student outcomes and other DEI related goals.
 "),
-      h4("BU Demographics Data"),
-      p("TBA"),
       h3("Objectives"),
       p("What are overall experiences of students within technology groups of computing, data & computational sciences, math & stats, and engineering at BU?"),
       tags$li("What are their experiences like with professors, peers, departments, and the broader BU community?
@@ -97,7 +95,7 @@ In the top graph, when looking at the values for the 'No' response, female (the 
       h3("Results"),
       h4("Respondent Demographics Summary"),
       p("Total responses: 632"),
-      p("Disclaimer: In attempts to foster a safe forum for students to make their voices heard, no survey question was required; students could choose to skip a question. Additionally, some questions would only display if the student responded in a particular way to a previous question. For example, if a student indicated that they were a computer engineering major or minor, then they would receive course satisfaction questions for the relevant set of associated computer engineering courses. These details explain why results for each question may not total 640. "),
+      p("Disclaimer: In attempts to foster a safe forum for students to make their voices heard, no survey question was required; students could choose to skip a question. Additionally, some questions would only display if the student responded in a particular way to a previous question. For example, if a student indicated that they were a computer engineering major or minor, then they would receive course satisfaction questions for the relevant set of associated computer engineering courses. These details explain why results for each question may not total 632. "),
       h5("Gender"),
       p("Students were asked to indicate their gender/gender identity. They were allowed one selection and provided options of: ‘male’, ‘female’, ‘non-binary’, ‘I don’t wish to disclose’, and ‘preferred response not listed’ with a free text field."),
       p("Disclaimer: the determination to include this list of responses was to remain consistent with common measures across higher education and simplify data comparisons with other institution’s surveys. While hoping to ensure all identities could be included with the addition of a preferred response field, it’s important to note the makeup of this list may possibly communicate a narrower definition of gender. Gender identity can be fluid and shift over time."),
