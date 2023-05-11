@@ -347,7 +347,13 @@ Please return to the Welcome tab and scroll down to the, 'How do I use Build-a-G
         graphTitle = paste("Survey Prompt: Please indicate your level of agreement with the following statement:\n", input$question)
       }else if (input$qtype == "Miscellaneous"){
         cdf = misc_ldf
+        if (str_detect(input$question, "AFTER")) {
+          graphTitle = paste("Survey Prompt: AFTER you completed your first few STEM courses at BU, do you feel like\nyour high school adequately prepared you for college? Or in other words, once you\nexperienced the difficulty level of college courses, did you feel like your high school\nprepared you?")
+        }else if (str_detect(input$question, "PRIOR")){
+          graphTitle = paste("Survey Prompt: Did you feel prepared for college level courses within your major PRIOR to\nentering BU? Or in other words, when you graduated from high school, did you feel ready for\ncollege level courses?")
+        }else{
         graphTitle = paste("Survey Prompt: ", input$question)
+        }
       }else if (input$qtype == "Discrimination"){
         cdf = dis_ldf
         if (str_detect(input$question, "experienced")){
@@ -363,6 +369,7 @@ Please return to the Welcome tab and scroll down to the, 'How do I use Build-a-G
 
 
       if (input$qtype == "Miscellaneous"){
+
         if (input$variable == "none"){
           select_df <-
             cdf %>%
@@ -374,7 +381,7 @@ Please return to the Welcome tab and scroll down to the, 'How do I use Build-a-G
 
           rdf %>%
             ggplot(aes(x = response)) %>%
-            stack_freq_prop("")
+            stack_freq_prop(title = graphTitle)
         }else{
           select_df <-
             cdf %>%
