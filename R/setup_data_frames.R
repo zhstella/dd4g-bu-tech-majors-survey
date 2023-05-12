@@ -28,6 +28,11 @@ ddf_s <- ddf_s %>%
     Q9 = ifelse(str_detect(Q9, "project"), "I have participated in a computer science related project, workshop, or hackathon.", Q9)
   )
 
+original_question_df <- original_question_df %>%
+  mutate(
+    question_text = ifelse(str_detect(question_text, "dropping"), "Have you ever considered dropping your current major? If so, why?", question_text)
+  )
+
 course_num_re <- "[A-Z]{3} [A-Z]{2}\\W*[0-9]{3}"
 course_satisfaction_q <- original_question_df %>%
   filter(
