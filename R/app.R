@@ -74,6 +74,7 @@ In the top graph, when looking at the values for the 'No' response, female (the 
       plotOutput("demo_plot"),
       h3("Common Trends"),
       p("Nam a risus eget est bibendum luctus ut at sem. Donec nec quam hendrerit, eleifend purus eget, posuere quam. Cras non ex vitae arcu pretium posuere ut tempor massa. Nullam vitae pellentesque nisl, eu hendrerit nisl. Interdum et malesuada fames ac ante ipsum primis in faucibus.")
+
     )
   ),
     tabPanel(
@@ -299,6 +300,7 @@ Please return to the Welcome tab and scroll down to the, 'How do I use Build-a-G
 
   )
   # compare_group_server("compare_groups")
+
 }
 
 
