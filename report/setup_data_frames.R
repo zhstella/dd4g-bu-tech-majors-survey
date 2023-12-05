@@ -42,11 +42,11 @@ course_ldf <- ddf_s %>%
   left_join(course_satisfaction_q, by = "question_id") %>%
   mutate(
     response =
-     factor(
-       response,
-       levels = satisfaction_level,
-       ordered = TRUE
-    )
+      factor(
+        response,
+        levels = satisfaction_level,
+        ordered = TRUE
+      )
   )
 
 # Get "agreement" questions
@@ -79,7 +79,7 @@ agreement_q <- original_question_df %>%
   filter(
     str_detect(question_text, "agreement")
   ) %>%
-  mutate(question_text = str_c(question_id, " ", str_extract(question_text, "(?<=: - ).*")))
+  mutate(question_text = str_c(" ", str_extract(question_text, "(?<=: - ).*")))
 
 agreement_ldf <- ddf_s %>%
   pivot_longer(
@@ -120,3 +120,17 @@ dis_ldf <- ddf_s %>%
     values_drop_na = TRUE
   ) %>%
   left_join(dis_q, by = "question_id")
+
+race_q <- original_question_df %>%
+  filter(question_id == "Q7")
+
+race_ldf <- ddf_s %>%
+  pivot_longer(
+    cols = "race",
+    names_to = "question_id",
+    values_to = "response",
+    values_drop_na = TRUE
+  ) %>%
+  left_join(race_q, by = "question_id")
+
+
