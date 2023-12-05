@@ -15,6 +15,24 @@ ddf_s <- ddf %>%
   ) %>%
   simplify_race_var()
 
+
+ddf_s <- ddf_s %>%
+  mutate(
+    Q34 = ifelse(str_detect(Q34, "No"), "No", Q34),
+    Q34 = ifelse(str_detect(Q34, "difficult"), "Yes, because classes are difficult.", Q34),
+    Q34 = ifelse(str_detect(Q34, "interest"), "Yes, because I found a new interest.", Q34),
+    Q34 = ifelse(str_detect(Q34, "Other"), "Other", Q34),
+    Q9 = ifelse(str_detect(Q9, "AP"), "I have taken an AP course related to Math and Computer Science.", Q9),
+    Q9 = ifelse(str_detect(Q9, "never"), "I have never participated in anything related to my major before college.", Q9),
+    Q9 = ifelse(str_detect(Q9, "workshop"), "I have participated in a computer science related project, workshop, or hackathon.", Q9),
+    Q9 = ifelse(str_detect(Q9, "project"), "I have participated in a computer science related project, workshop, or hackathon.", Q9)
+  )
+
+original_question_df <- original_question_df %>%
+  mutate(
+    question_text = ifelse(str_detect(question_text, "dropping"), "Have you ever considered dropping your current major? If so, why?", question_text)
+  )
+
 course_num_re <- "[A-Z]{3} [A-Z]{2}\\W*[0-9]{3}"
 course_satisfaction_q <- original_question_df %>%
   filter(
@@ -124,6 +142,18 @@ dis_ldf <- ddf_s %>%
 race_q <- original_question_df %>%
   filter(question_id == "Q7")
 
+gender_q <- original_question_df %>%
+  filter(question_id == "Q6")
+
+firstgen_q <- original_question_df %>%
+  filter(question_id == "Q4")
+
+major_q <- original_question_df %>%
+  filter(question_id == "Q1")
+
+international_q <- original_question_df %>%
+  filter(question_id == "Q5")
+
 race_ldf <- ddf_s %>%
   pivot_longer(
     cols = "race",
@@ -132,6 +162,42 @@ race_ldf <- ddf_s %>%
     values_drop_na = TRUE
   ) %>%
   left_join(race_q, by = "question_id")
+
+gender_ldf <- ddf_s %>%
+  pivot_longer(
+    cols = "gender",
+    names_to = "question_id",
+    values_to = "response",
+    values_drop_na = TRUE
+  ) %>%
+  left_join(gender_q, by = "question_id")
+
+firstgen_ldf <- ddf_s %>%
+  pivot_longer(
+    cols = "first_gen",
+    names_to = "question_id",
+    values_to = "response",
+    values_drop_na = TRUE
+  ) %>%
+  left_join(firstgen_q, by = "question_id")
+
+major_ldf <- ddf_s %>%
+  pivot_longer(
+    cols = "major",
+    names_to = "question_id",
+    values_to = "response",
+    values_drop_na = TRUE
+  ) %>%
+  left_join(firstgen_q, by = "question_id")
+
+international_ldf <- ddf_s %>%
+  pivot_longer(
+    cols = "international",
+    names_to = "question_id",
+    values_to = "response",
+    values_drop_na = TRUE
+  ) %>%
+  left_join(firstgen_q, by = "question_id")
 
 
 discrimination_q_tbl <-
@@ -145,3 +211,33 @@ discrimination_q_tbl <-
     subsection_title = "Discrimination",
     which_df = "dis"
   )
+
+dep_tbl <-
+    tibble(
+      selected_q =
+        sort(unique(str_sub(course_satisfaction_q$question_text, 1, 6)))
+    ) %>%
+    mutate(
+      selected_q_code = str_replace_all(selected_q, "\\W+", "_"),
+      title = str_glue("{selected_q} Department Satisfaction"),
+      subsection_title = "Satisfaction",
+      which_df = "course"
+    )
+
+
+
+
+misc_q <-
+  original_question_df %>%
+  filter(question_id == "Q19" | question_id == "Q21" | question_id == "Q17" | question_id == "Q34" | question_id == "Q10" | question_id == "Q9")
+
+
+misc_ldf <- ddf_s %>%
+  pivot_longer(
+    cols = misc_q$question_id,
+    names_to = "question_id",
+    values_to = "response",
+    values_drop_na = TRUE
+  ) %>%
+  left_join(misc_q, by = "question_id")
+
