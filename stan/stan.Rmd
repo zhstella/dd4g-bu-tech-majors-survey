@@ -4,7 +4,7 @@ author: "Daniel Sussman"
 date: "2023-03-09"
 output: html_document
 editor_options: 
-  chunk_output_type: console
+  chunk_output_type: inline
 ---
 
 ```{r setup, include=FALSE}
@@ -105,7 +105,7 @@ course_ldf <- course_ldf_orig %>%
 
 
 ```{r model_from_cgpt, output.var="stan_sat_model"}
-stan_sat_model <- stan_model("stan/stan.stan", "sat_model")
+stan_sat_model <- stan_model(here::here("stan/stan.stan"), "sat_model")
 # stan_sat_model <- stan("stan/stan.stan")
 ```
 
@@ -120,43 +120,36 @@ make_sampling_data <- function(course_ldf) {
     t(chol(zero_sample_mean_cov(k, epsilon), pivot = TRUE)[1:(k - 1),]) |> 
       suppressWarnings()
   }
+  get_course_property <- function(prop){
+    course_ldf %>%
+      distinct(course, {{prop}}) %>%
+      arrange(course) %>% 
+      pull({{prop}}) %>% 
+      to_int()
+  }
+
     # int<lower=1> N;                     // Number of observations
   N <- nrow(course_ldf)
-  
-    # int<lower=1> C;                     // Number of response levels
+      # int<lower=1> C;                     // Number of response levels
     # int<lower=1, upper=C> response[N];  // Vector of responses
   C <- nlevels(course_ldf$response)
   response <- as.integer(course_ldf$response)
   
-    # int<lower=1> D;                     // Number of departments
-    # int<lower=1, upper=D> dept[N];      // Vector of department indicators
-  dept <- to_int(course_ldf$dept)
-  
-  
-  D <- max(dept)
-  dept_chol <- zero_sample_mean_chol(D)
-  
-    # int<lower=1> L;                     // Number of course levels
-    # int<lower=1, upper=L> level[N];     // Vector of level indicators
-  level <- to_int(course_ldf$level)
-  L <- max(level)
-    
     # int<lower=1> K;                     // Number of courses
     # int<lower=1, upper=K> course[N];    // Vector of course indicators
-  course_dept <- course_ldf %>%
-    distinct(course, dept) %>%
-    arrange(course) %>% 
-    pull(dept) %>% 
-    to_int()
-  
-  course_level <- course_ldf %>%
-    distinct(course, level) %>%
-    arrange(course) %>% 
-    pull(level) %>% 
-    to_int()
-  
   course <- to_int(course_ldf$course)
+  course_dept <- get_course_property(dept)
+  course_level <- get_course_property(level)
   K <- max(course)
+  
+     # int<lower=1> D;                     // Number of departments
+  dept <- to_int(course_ldf$dept)
+  level <- to_int(course_ldf$level)
+  D <- max(course_dept)
+  dept_chol <- zero_sample_mean_chol(D)
+    # int<lower=1> L;                     // Number of course levels
+  L <- max(course_level)
+    
   course_chol <- reduce(
     unique(course_dept),
     function(cv, d){
@@ -169,21 +162,28 @@ make_sampling_data <- function(course_ldf) {
   )
   last_course <- map_int(unique(course_dept), ~last(which(course_dept == .)))
   course_chol <- t(course_chol[-last_course,])
-  list(
-    N = N,
-    C = C,
-    response = response,
-    D = D,
-    dept = dept,
-    dept_chol = dept_chol,
-    L = L,
-    level = level,
-    K = K,
-    course = course,
-    course_dept = course_dept,
-    course_level = course_level,
-    course_chol = course_chol
-  )
+  
+  race <- to_int(course_ldf$race)
+  R <- max(race)
+  race_chol <- zero_sample_mean_chol(R)
+  gender <- to_int(course_ldf$gender)
+  G <- max(gender)
+  gender_chol <- zero_sample_mean_chol(G)
+
+  as.list(environment())
+  # list(
+  #   N = N,
+  #   C = C,
+  #   response = response,
+  #   D = D,
+  #   dept_chol = dept_chol,
+  #   L = L,
+  #   K = K,
+  #   course = course,
+  #   course_dept = course_dept,
+  #   course_level = course_level,
+  #   course_chol = course_chol
+  # )
 }
 
 sampling_data <- make_sampling_data(course_ldf)
@@ -200,7 +200,10 @@ make_stan_name_table <- function(var, s_data = sampling_data, cldf = course_ldf)
 }
 
 stan_name_tbl <- 
-  map(c("course", "dept", "level"), make_stan_name_table) |> 
+  map(
+    c("course", "dept", "level", "race", "gender"),
+    make_stan_name_table
+  ) |> 
   list_rbind() |> 
   bind_rows(
     tibble(
@@ -221,10 +224,9 @@ sat_model_fit <- sampling(
     4, 
     list(sigma_dept = atan(1), sigma_course = atan(1), sigma_level = atan(1)), 
     simplify = FALSE
-  ),
-  control = list(adapt_delta = 0.9)
+  ) #,  control = list(adapt_delta = 0.9)
 )
-save(sat_model_fit, file = "stan/sat_model_fit_v0_0_1.RData")
+save(sat_model_fit, file = "stan/sat_model_fit_v0_0_2.RData")
 ```
 
 ```{r}
@@ -314,7 +316,7 @@ ccd_pred |>
   mutate(pobs = if_else(is.na(n), 0, n / sum(n))) |> 
   ggplot(aes(x = response, fill = course, group = course)) +
   stat_summary(aes(y = pobs), geom = "col", fun.y = mean, position = "dodge") +
-  stat_summary(aes(y = p), fun.data = mean_sdl, position = position_dodge(1))
+  stat_summary(aes(y = p), fun.data = median_hilow, position = position_dodge(1))
 ```
 
 ```{r}
@@ -350,8 +352,9 @@ ccd_pred |>
 
 ```{r diagnostic}
 
+np <- bayesplot::nuts_params(sat_model_fit) |> as_tibble()
 cor_mat <- fit_tbl |> 
-  mutate(Chain = rep(1:4, each  = 1500), Iteration = rep(1:1500, 4)) |>
+  mutate(Chain = rep(1:4, each  = 1000), Iteration = rep(1:1000, 4)) |>
   left_join(np |> filter(Parameter == "divergent__")) |>
   filter(Value == 1)  |>
   select(where(is.numeric)) |> 
@@ -361,11 +364,10 @@ cor_mat <- fit_tbl |>
   pivot_longer(-v1, names_to = "v2", values_to = "cor") %>%
   # filter(is.na(cor)) %>% 
   filter(v1 < v2) %>%
-  filter(across(c(v1,v2), \(v)str_detect(v, "raw\\[|sigma|lp_")), !is.na(cor)) %>%
+  filter(if_all(c(v1,v2), \(v)str_detect(v, "raw\\[|sigma|lp_")), !is.na(cor)) %>%
   arrange(-cor))
 corr_tbl %>% ggplot(aes(x = v1, y=v2, fill = cor)) + geom_tile() + geom_tile(aes(x = v2, y=v1)) + scale_fill_gradient2() + scale_y_discrete(limits = rev)
 
-np <- nuts_params(sat_model_fit) |> as_tibble()
 np
 
 
