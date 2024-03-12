@@ -171,73 +171,7 @@ experiences or observations of discrimination. These questions were:
 ")
        )
   ),
-  tabPanel(
-    "Build-a-Graph-2022",
-    sidebarLayout(
-      sidebarPanel(
-        selectInput(
-          "qtype",
-          label = tags$span(
-            "Select question type", bsButton("q", label = "", icon = icon("info"), style = "info", size = "extra-small")),
-          choices = c("Agreement", "Adjectives", "Course Satisfaction", "Discrimination", "Miscellaneous"),
-          multiple = FALSE,
-          selected = "Agreement"
-        ),  bsPopover(
-          id = "q",
-          title = "More information",
-          content = paste0(
-            "Select a section or question type from the survey."
-          ),
-          placement = "right",
-          trigger = "hover",
-          options = list(container = "body")
-        ),selectInput(
-          "dep",
-          label = tags$span(
-            "Filter by course or by department?", bsButton("depa", label = "", icon = icon("info"), style = "info", size = "extra-small")),
-          choices = c("Course", "Department"),
-          multiple = FALSE,
-        ), bsPopover(
-          id = "depa",
-          title = "More information",
-          content = paste0(
-            "View the course satisfaction for individual classes or view the total course satisfaction for courses within a department."
-          ),
-          placement = "right",
-          trigger = "hover",
-          options = list(container = "body")
-        ),
-        selectInput(
-          "question",
-          label = "Select question",
-          choices = NULL,
-          multiple = FALSE
-        ),
-        selectInput(
-          "variable",
-          label = tags$span(
-            "Select variable", bsButton("v", label = "", icon = icon("info"), style = "info", size = "extra-small")),
-          choices = variable_options,
-          multiple = FALSE,
-        ),  bsPopover(
-          id = "v",
-          title = "More information",
-          content = paste0(
-            "To view breakdowns of the selected question by demographic attributes, identify the variable of interest."
-          ),
-          placement = "right",
-          trigger = "hover",
-          options = list(container = "body")
-        ),
-        p("Need help with reading the graphs?"),
-        actionButton("help", "Help")
 
-      ),
-      mainPanel(
-        plotOutput("freq_plot")
-      )
-    )
-  ),
     tabPanel(
       "Build-a-Graph-2024",
       sidebarLayout(
