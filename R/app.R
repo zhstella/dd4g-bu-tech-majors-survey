@@ -173,10 +173,26 @@ experiences or observations of discrimination. These questions were:
   ),
 
     tabPanel(
-      "Build-a-Graph-2024",
+      "Build-a-Graph",
       sidebarLayout(
         sidebarPanel(
           selectInput(
+            "year",
+            label = tags$span(
+              "Select year", bsButton("y", label = "", icon = icon("info"), style = "info", size = "extra-small")),
+            choices = c("2022", "2024"),
+            multiple = FALSE,
+            selected = "2022"
+          ),  bsPopover(
+            id = "y",
+            title = "More information",
+            content = paste0(
+              "Select a year from the survey."
+            ),
+            placement = "right",
+            trigger = "hover",
+            options = list(container = "body")
+          ), selectInput(
             "qtype",
             label = tags$span(
               "Select question type", bsButton("q", label = "", icon = icon("info"), style = "info", size = "extra-small")),
